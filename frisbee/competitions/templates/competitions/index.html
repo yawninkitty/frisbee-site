@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная{% endblock %}
+{% load static %}
+{% block content %}
+
+    <div class="index-wrapper">
+        <!-- Герой-секция (баннер) -->
+       <section class="hero">
+           <div class="container">
+               <div class="hero-content">
+                   <h1 class="header-lg">Участвуйте в соревнованиях<br>по дог-фризби</h1>
+                   <p class="hero-description body-text-lg-relaxed">Ищите афиши по всей России, соревнуйтесь с другими спортсменами и храните результаты в профиле. Ваш чемпионский сезон начинается здесь.</p>
+                   <a href="{% url 'competitions:competition_list' %}" class="btn btn-primary btn-l">
+                       Посмотреть соревнования
+                   </a>
+               </div>
+               <img class="hero-image" src="{% static 'images/dog_main.svg' %}" alt="Иллюстрация собаки">
+           </div>
+       </section>
+
+        <section class="carousel-line">
+            <div class="container padding-lg">
+                <div class="content">
+                    <!-- Карусель соревнований -->
+                    <div class="carousel-container">
+                        <div class="carousel-header">
+                            <h2 class="header-md">График соревнований</h2>
+                            <div class="carousel-actions">
+                                <a class="btn btn-secondary btn-s" href="{% url 'competitions:competition_list' %}">Смотреть все</a>
+                                <button class="carousel-prev btn btn-secondary btn-s">
+                                    <img src="{% static 'images/arrow.svg' %}" alt="Назад">
+                                </button>
+                                <button class="carousel-next btn btn-secondary btn-s">
+                                    <img src="{% static 'images/arrow.svg' %}" alt="Вперед">
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="carousel-grid">
+                            {% for comp in upcoming_competitions %}
+                                {% include 'competitions/competition_card.html' with comp=comp %}
+                            {% empty %}
+                                <p>Пока нет соревнований</p>
+                            {% endfor %}
+                        </div>
+                        <div class="carousel-dots"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="container">
+                <img class="features-image" src="{% static 'images/dog_fly.svg' %}" alt="Иллюстрация собаки">
+                <div class="content">
+                    <div class="slider">
+                        <button class="slider-btn active-organizer">Организаторам</button>
+                        <button class="slider-btn">Участникам</button>
+                    </div>
+                    <div class="features-list">
+
+                    </div>
+                    <a href="#" class="btn btn-l">Как стать организатором?</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="advantages">
+            <h2 class="header-lg">Почему мы?</h2>
+            <div class="container">
+                <div class="content">
+                    <div class="advantage">
+                        <p class="header-sm">Проверенные организаторы</p>
+                        <p class="body-text-lg-relaxed">Мы заботимся о вашей безопасности, поэтому каждый организатор проходит модерацию</p>
+                        <img class="advantage-image" src="{% static 'images/girl_stand.svg' %}" alt="Иллюстрация девочки">
+                    </div>
+                    <div class="advantage">
+                        <p class="header-sm">Поддержка сообщества</p>
+                        <p class="body-text-lg-relaxed">Наш сайт создан при участии реальных спортсменов и организаторов, чтобы быть максимально полезным</p>
+                        <img class="advantage-image" src="{% static 'images/dog_and_frisbee.svg' %}" alt="Иллюстрация девочки">
+                    </div>
+                </div>
+                <div class="advantage">
+                    <p class="header-sm">Забота о новичках</p>
+                    <p class="body-text-lg-relaxed">Мы собрали советы от опытных спортсменов в удобные гайды, чтобы вы легко разобрались с правилами и подготовкой к соревнованиям</p>
+                    <img class="advantage-image" src="{% static 'images/girl_and_dog_walk.svg' %}" alt="Иллюстрация девочки">
+                </div>
+            </div>
+        </section>
+
+        <section class="carousel-line">
+            <div class="container">
+                <div class="content">
+                    <!-- Карусель статей -->
+                    <div class="carousel-container">
+                        <div class="carousel-header">
+                            <h2 class="header-md">Статьи журнала</h2>
+                            <div class="carousel-actions">
+                                <a class="btn btn-secondary btn-s" href="{% url 'journal:article_list' %}">Смотреть все</a>
+                                <button class="carousel-prev btn btn-secondary btn-s">
+                                    <img src="{% static 'images/arrow.svg' %}" alt="Назад">
+                                </button>
+                                <button class="carousel-next btn btn-secondary btn-s">
+                                    <img src="{% static 'images/arrow.svg' %}" alt="Вперед">
+                                </button>
+                            </div>
+                        </div>
+                        <div class="carousel-grid articles-grid">
+                            {% for article in recent_articles %}
+                                {% include 'journal/article_card.html' with article=article %}
+                            {% empty %}
+                                <p>Пока нет статей</p>
+                            {% endfor %}
+                        </div>
+                        <div class="carousel-dots"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="faq">
+            <div class="container">
+                <h2 class="header-lg">Отвечаем на популярные вопросы</h2>
+                <div class="content">
+
+                    <!-- Вопрос 1 -->
+                    <div class="question">
+                        <p class="header-sm">Что такое дог-фризби?</p>
+                        <img src="{% static 'images/arrow.svg' %}" alt="Раскрыть">
+                    </div>
+                    <div class="answer">
+                        <p class="body-text-lg-relaxed">Дог-фризби — это вид спорта, в котором собака ловит летающий диск. Соревнования проходят в трёх дисциплинах: буллсай (точность), броски на дальность и броски на точность. Участники соревнуются в трёх классах: Новички, Прогресс и Открытый.</p>
+                    </div>
+
+                    <!-- Вопрос 2 -->
+                    <div class="question">
+                        <p class="header-sm">С какими собаками можно участвовать в соревнованиях?</p>
+                        <img src="{% static 'images/arrow.svg' %}" alt="Раскрыть">
+                    </div>
+                    <div class="answer">
+                        <p class="body-text-lg-relaxed">Участвовать могут собаки любой породы и размера, включая метисов. Главное условие — возраст от 1 года (для безопасности растущего организма). Также важно, чтобы собака была здорова и имела необходимые прививки. Перед соревнованиями рекомендуется проконсультироваться с ветеринаром.</p>
+                    </div>
+
+                    <!-- Вопрос 3 -->
+                    <div class="question">
+                        <p class="header-sm">С чего начать заниматься дог-фризби?</p>
+                        <img src="{% static 'images/arrow.svg' %}" alt="Раскрыть">
+                    </div>
+                    <div class="answer">
+                        <p class="body-text-lg-relaxed">Начните с тренировок с диском или пуллером — сначала катайте диск по полу, чтобы собака привыкла к движению, затем постепенно переходите к коротким броскам и увеличивайте высоту. Тренировки должны быть короткими и позитивными, начиная с 5-10 минут в день.</p>
+                    </div>
+
+                    <!-- Вопрос 4 -->
+                    <div class="question">
+                        <p class="header-sm">Какой диск лучше купить для начала?</p>
+                        <img src="{% static 'images/arrow.svg' %}" alt="Раскрыть">
+                    </div>
+                    <div class="answer">
+                        <p class="body-text-lg-relaxed">Подойдёт любой диск из мягкого пластика или резины, например Hero Disc SuperHero, Kong Flyer или Puller. Главное правило — не давайте собаке грызть диск без присмотра и используйте его только во время совместных тренировок, тогда он прослужит дольше.</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <section class="feedback">
+            <img class="feedback-image" src="{% static 'images/girl_wave.svg' %}" alt="Иллюстрация девочки">
+            <div class="container">
+                <div>
+                    <h2 class="header-lg">Мы всегда<br>на связи</h2>
+                    <p class="body-text-lg-relaxed">Пишите по любым вопросам</p>
+                </div>
+                <a class="btn btn-white" href="#">
+                    Написать на почту
+                    <div>
+                        <img class="feedback-icon" src="{% static 'images/envelope.svg' %}" alt="Почта">
+                    </div>
+                </a>
+            </div>
+        </section>
+    </div>
+
+{% endblock %}

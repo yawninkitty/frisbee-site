@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+
+{% block title %}Личный кабинет{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<div class="profile-container container">
+    <!-- Шапка -->
+    <div class="profile-header">
+        <div class="profile-header-content">
+            <div class="profile-avatar">
+                {% if user.profile.avatar %}
+                    <img src="{{ user.profile.avatar.url }}" alt="Аватар">
+                {% else %}
+                    {% if user.profile.gender == 'male' %}
+                        <img src="{% static 'images/man_avatar_placeholder.svg' %}" alt="Аватар">
+                    {% else %}
+                        <img src="{% static 'images/woman_avatar_placeholder.svg' %}" alt="Аватар">
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div class="profile-info">
+                <h1 class="header-md">{{ user.first_name }} {{ user.last_name }}</h1>
+                <p class="body-text-md color-gray-middle">{{ user.email }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной контент с двумя колонками -->
+    <div class="profile-main">
+        <!-- Меню (левая колонка) -->
+        <div class="profile-menu">
+            <div class="profile-menu-items">
+                <button class="profile-menu-item {% if active_tab == 'applications' %}active{% endif %}" data-tab="applications">
+                    <img src="{% static 'images/my_applications.svg' %}">
+                    Мои заявки
+                </button>
+                <button class="profile-menu-item {% if active_tab == 'dogs' %}active{% endif %}" data-tab="dogs">
+                    <img src="{% static 'images/my_dogs.svg' %}">
+                    Мои собаки
+                </button>
+                <button class="profile-menu-item {% if active_tab == 'account' %}active{% endif %}" data-tab="account">
+                    <img src="{% static 'images/profile.svg' %}">
+                    Аккаунт
+                </button>
+            </div>
+        </div>
+
+        <!-- Контент (правая колонка) -->
+        <div class="profile-content">
+            <!-- Вкладка: Мои заявки -->
+            <div id="applications" class="tab-content {% if active_tab == 'applications' %}active{% endif %}">
+                <!-- Фильтр для заявок -->
+                <div class="applications-filters">
+                    <!-- Десктопные чипы -->
+                    <div class="chips-container desktop-filters">
+                        <button class="chip active" data-filter="all">Все</button>
+                        <button class="chip" data-filter="waiting_owner">Ожидают подтверждения</button>
+                        <button class="chip" data-filter="pending">На рассмотрении</button>
+                        <button class="chip" data-filter="approved">Одобренные</button>
+                        <button class="chip" data-filter="rejected">Отклонённые</button>
+                        <button class="chip" data-filter="cancelled">Отменённые</button>
+                    </div>
+
+                    <!-- Мобильный дропдаун -->
+                    <div class="mobile-filter-dropdown">
+                        <button class="dropdown-btn" data-dropdown="status-dropdown">
+                            <span class="btn-text" id="status-dropdown-text">Все</span>
+                            <img src="{% static 'images/down_small.svg' %}" alt="▼" class="dropdown-arrow">
+                        </button>
+                        <div id="status-dropdown" class="dropdown-content">
+                            <div class="custom-select-option active" data-value="all">Все</div>
+                            <div class="custom-select-option" data-value="waiting_owner">Ожидают подтверждения</div>
+                            <div class="custom-select-option" data-value="pending">На рассмотрении</div>
+                            <div class="custom-select-option" data-value="approved">Одобренные</div>
+                            <div class="custom-select-option" data-value="rejected">Отклонённые</div>
+                            <div class="custom-select-option" data-value="cancelled">Отменённые</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="applications-container" class="applications-grid">
+                    {% for app in applications %}
+                        {% include 'users/application_card.html' with app=app %}
+                    {% empty %}
+                        <p class="empty-message">У вас пока нет заявок.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Вкладка: Мои собаки -->
+            <div id="dogs" class="tab-content {% if active_tab == 'dogs' %}active{% endif %}">
+                <div class="carousel-container">
+                    <div class="carousel-header">
+                        <button id="add-dog-btn" class="btn btn-secondary btn-s">Добавить собаку +</button>
+                        <div class="carousel-actions">
+                            <button class="carousel-prev btn btn-secondary btn-s">
+                                <img src="{% static 'images/arrow.svg' %}" alt="Назад">
+                            </button>
+                            <button class="carousel-next btn btn-secondary btn-s">
+                                <img src="{% static 'images/arrow.svg' %}" alt="Вперед">
+                            </button>
+                        </div>
+                    </div>
+                    <div class="carousel-grid" id="dogs-carousel-grid">
+                        <div class="loader">Загрузка...</div>
+                    </div>
+                    <div class="carousel-dots"></div>
+                </div>
+            </div>
+
+            <!-- Вкладка: Аккаунт -->
+            <div id="account" class="tab-content {% if active_tab == 'account' %}active{% endif %}">
+                <!-- Режим просмотра -->
+                <div class="profile-view-mode" id="profile-view-mode">
+                    <!-- Все секции в колонку -->
+                    <div class="account-sections">
+                        <!-- Основные данные и действия в две колонки -->
+                        <div class="account-two-columns">
+                            <!-- Левая колонка - основные данные -->
+                            <div class="account-left-column">
+                                <div class="info-section">
+                                    <h3 class="header-sm">Основные данные</h3>
+                                    <div class="info-fields">
+                                        <div class="floating-label-group">
+                                            <input type="text" value="{{ user.username }}" readonly class="input" id="view-username" placeholder=" ">
+                                            <label>Логин</label>
+                                        </div>
+                                        <div class="floating-label-group">
+                                            <input type="text" value="{{ user.first_name|default:'—' }}" readonly class="input" id="view-first-name" placeholder=" ">
+                                            <label>Имя</label>
+                                        </div>
+                                        <div class="floating-label-group">
+                                            <input type="text" value="{{ user.last_name|default:'—' }}" readonly class="input" id="view-last-name" placeholder=" ">
+                                            <label>Фамилия</label>
+                                        </div>
+                                        <div class="floating-label-group">
+                                            <input type="text" value="{{ user.profile.get_gender_display|default:'—' }}" readonly class="input" id="view-gender" placeholder=" ">
+                                            <label>Пол</label>
+                                        </div>
+                                        <div class="floating-label-group">
+                                            <input type="text" value="{{ user.profile.get_sport_class_display|default:'—' }}" readonly class="input" id="view-sport-class" placeholder=" ">
+                                            <label>Класс спортсмена</label>
+                                        </div>
+                                        <div class="floating-label-group">
+                                            <input type="text" value="{% if user.profile.is_organizer %}Организатор{% else %}Спортсмен{% endif %}" readonly class="input" id="view-role" placeholder=" ">
+                                            <label>Роль</label>
+                                        </div>
+                                    </div>
+                                    <button id="edit-profile-btn" class="btn btn-secondary btn-l">Редактировать</button>
+                                </div>
+                            </div>
+
+                            <!-- Правая колонка - действия -->
+                            <div class="account-right-column">
+                                {% if not user.profile.is_organizer and not user.profile.is_organizer_requested %}
+                                <div class="action-section">
+                                    <button id="request-organizer-btn" class="btn btn-primary btn-l">Стать организатором</button>
+                                    <p class="action-hint body-text-sm-relaxed color-gray-middle">После модерации вы сможете создавать соревнования</p>
+                                </div>
+                                {% elif user.profile.is_organizer_requested %}
+                                <div class="action-section">
+                                    <p class="status-pending">Заявка на роль организатора рассматривается.<br>
+                                    По окончании модерации вам придёт уведомление.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Безопасность -->
+                        <div class="info-section">
+                            <h3 class="header-sm">Безопасность</h3>
+                            <div class="info-fields">
+                                <div class="info-field-with-action">
+                                    <div class="floating-label-group" style="flex: 1;">
+                                        <input type="email" value="{{ user.email }}" readonly class="input" id="view-email" placeholder=" ">
+                                        <label>Почта</label>
+                                    </div>
+                                    <button class="btn btn-secondary btn-l change-email-btn">Изменить</button>
+                                </div>
+                                <div class="info-field-with-action">
+                                    <div class="floating-label-group" style="flex: 1;">
+                                        <input type="password" value="********" readonly class="input" id="view-password" placeholder=" ">
+                                        <label>Пароль</label>
+                                    </div>
+                                    <button id="change-password-btn" class="btn btn-secondary btn-l">Изменить</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Действия с аккаунтом -->
+                        <div class="info-section">
+                            <h3 class="header-sm">Действия с аккаунтом</h3>
+                            <div class="account-actions">
+                                <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-secondary btn-l">Выйти</button>
+                                </form>
+                                <button id="delete-account-btn" class="btn btn-danger btn-l">Удалить аккаунт</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Режим редактирования -->
+                <div class="profile-edit-mode" id="profile-edit-mode" style="display: none;">
+                    <form id="profile-edit-form">
+                        {% csrf_token %}
+                        <div class="info-section">
+                            <h3 class="header-sm">Редактирование профиля</h3>
+                            <div class="info-fields">
+                                <div class="floating-label-group">
+                                    <input type="text" name="first_name" id="edit-first-name" class="input" value="{{ user.first_name }}" placeholder=" ">
+                                    <label>Имя</label>
+                                </div>
+                                <div class="floating-label-group">
+                                    <input type="text" name="last_name" id="edit-last-name" class="input" value="{{ user.last_name }}" placeholder=" ">
+                                    <label>Фамилия</label>
+                                </div>
+                                <div class="floating-label-group">
+                                    <input type="date" name="birth_date" id="edit-birth-date" class="input" value="{{ user.profile.birth_date|date:'Y-m-d' }}" placeholder=" ">
+                                    <label>Дата рождения</label>
+                                </div>
+
+                                <!-- Пол - радио-кнопки -->
+                                <div class="radio-group">
+                                    <div class="radio-group-label">Пол</div>
+                                    <div class="radio-options-row">
+                                        <label class="radio-option {% if user.profile.gender == 'male' %}active{% endif %}">
+                                            <input type="radio" name="gender" value="male" {% if user.profile.gender == 'male' %}checked{% endif %}>
+                                            <span>Мужской</span>
+                                        </label>
+                                        <label class="radio-option {% if user.profile.gender == 'female' %}active{% endif %}">
+                                            <input type="radio" name="gender" value="female" {% if user.profile.gender == 'female' %}checked{% endif %}>
+                                            <span>Женский</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Класс спортсмена - радио-кнопки -->
+                                <div class="radio-group">
+                                    <div class="radio-group-label">Класс спортсмена</div>
+                                    <div class="radio-options-row">
+                                        {% for value, label in sport_class_choices %}
+                                        <label class="radio-option {% if user.profile.sport_class == value %}active{% endif %}">
+                                            <input type="radio" name="sport_class" value="{{ value }}" {% if user.profile.sport_class == value %}checked{% endif %}>
+                                            <span>{{ label }}</span>
+                                        </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <!-- Аватар -->
+                                <div class="file-upload-group">
+                                    <div class="avatar-container">
+                                        <div class="avatar-preview" id="profile-avatar-preview">
+                                            {% if user.profile.avatar %}
+                                                <img id="profile-avatar-preview-img" src="{{ user.profile.avatar.url }}" alt="Аватар">
+                                            {% else %}
+                                                {% if user.profile.gender == 'male' %}
+                                                    <img id="profile-avatar-preview-img" src="{% static 'images/man_avatar_placeholder.svg' %}" alt="Аватар">
+                                                {% else %}
+                                                    <img id="profile-avatar-preview-img" src="{% static 'images/woman_avatar_placeholder.svg' %}" alt="Аватар">
+                                                {% endif %}
+                                            {% endif %}
+                                            <div class="avatar-overlay">
+                                                <span class="avatar-edit-icon">✏️</span>
+                                                <span class="avatar-delete-icon">🗑️</span>
+                                            </div>
+                                        </div>
+                                        <input type="file" name="avatar" id="edit-avatar" accept="image/*" style="display: none;">
+                                    </div>
+                                    <input type="hidden" id="profile-delete-avatar-flag" value="false">
+                                </div>
+                            </div>
+                            <div id="profile-edit-error" class="error-message" style="color: red; display: none;"></div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary btn-s">Сохранить</button>
+                                <button type="button" id="cancel-edit-profile" class="btn btn-secondary btn-s">Отмена</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для добавления/редактирования собаки (общее) -->
+{% include 'users/dog_add_edit_modal.html' %}
+
+<!-- Оверлей для затемнения фона (для причины отклонения) -->
+<div id="rejection-modal-overlay" class="modal-overlay" style="display:none;"></div>
+
+<!-- Модальное окно для причины отклонения -->
+<div id="rejection-modal" class="modal-container" style="display:none;">
+    <h3>Причина отклонения заявки</h3>
+    <p id="rejection-comment-text"></p>
+    <div class="modal-buttons">
+        <button id="close-rejection-modal" class="btn-secondary">Закрыть</button>
+    </div>
+</div>
+
+<!-- Модальное окно для загрузки чека -->
+<div id="receipt-upload-modal" class="modal-container" style="display:none;">
+    <div class="modal-header">
+        <h3 class="header-sm">Загрузить чек об оплате</h3>
+        <button class="modal-close" id="close-receipt-upload-modal">
+            <img src="{% static 'images/cross.svg' %}" alt="Закрыть">
+        </button>
+    </div>
+    <div class="modal-content">
+        <form id="receipt-upload-form">
+            {% csrf_token %}
+            <input type="hidden" id="receipt-app-id" name="app_id">
+
+            <!-- Блок с загруженным файлом -->
+            <div id="receipt-file-area" class="form-section">
+                <div id="receipt-files-list" class="files-list"></div>
+                <div class="file-upload-area">
+                    <div class="file-upload-hint">
+                        <button type="button" id="add-receipt-btn" class="btn btn-secondary btn-l">Выбрать файл +</button>
+                        <small class="form-hint body-text-sm-relaxed color-gray-middle">
+                            Максимальный размер: 10 МБ.
+                            Поддерживаются: PDF, JPG, PNG
+                        </small>
+                    </div>
+                    <input type="file" id="receipt-file-input" style="display:none;" accept=".pdf,.jpg,.jpeg,.png">
+                    <div id="receipt-upload-progress" class="upload-progress" style="display:none;"></div>
+                </div>
+            </div>
+
+            <div id="receipt-upload-error" class="error-message" style="display:none;"></div>
+
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary btn-s">Сохранить</button>
+                <button type="button" id="cancel-receipt-modal" class="btn btn-secondary btn-s">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="receipt-modal-overlay" class="modal-overlay" style="display:none;"></div>
+
+<!-- Шаблон для карточки файла -->
+<template id="file-card-template">
+    <div class="file-card" data-file-path="">
+        <span class="file-icon"><img src="{% static 'images/file.svg' %}"></span>
+        <span class="file-name body-text-sm"></span>
+        <span class="file-size body-text-sm color-gray-middle"></span>
+        <div class="file-progress" style="display:none;">
+            <div class="progress-bar"></div>
+        </div>
+        <button type="button" class="remove-file modal-close"><img src="{% static 'images/cross.svg' %}"></button>
+    </div>
+</template>
+
+{% load static %}
+<script src="{% static 'js/dog_add_edit_modal.js' %}"></script>
+<script src="{% static 'js/profile.js' %}?v=12"></script>
+{% endblock %}

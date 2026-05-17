@@ -1,0 +1,6 @@
+{% load i18n %}
+<img src="{{ image }}" alt="captcha" class="captcha">
+<div class="floating-label-group">
+    <input type="text" name="{{ widget.name }}" class="input" placeholder=" " required autocomplete="off" id="{{ widget.attrs.id }}">
+    <label>Введите код с картинки *</label>
+</div>

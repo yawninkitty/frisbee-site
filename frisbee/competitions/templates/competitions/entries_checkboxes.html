@@ -1,0 +1,63 @@
+<!-- competitions/templates/competitions/entries_checkboxes.html -->
+{% load static %}
+
+{% for discipline in discipline_groups %}
+    <div class="entries-cards-group" data-discipline="{{ discipline.discipline_name }}">
+        <h3 class="header-sm">{{ discipline.discipline_name }}</h3>
+
+        <!-- Табы классов — только на мобилке -->
+        <div class="mobile-class-tabs">
+            {% for class_info in discipline.classes %}
+                <button class="chip mobile-class-tab {% if forloop.first %}active{% endif %}"
+                        data-discipline="{{ discipline.discipline_name }}"
+                        data-class="{{ class_info.class_name }}">
+                    {{ class_info.class_name }}
+                </button>
+            {% endfor %}
+        </div>
+
+        <div class="entries-cards-list">
+            {% for class_info in discipline.classes %}
+                <div class="entry-card-info"
+                     data-discipline="{{ discipline.discipline_name }}"
+                     data-class="{{ class_info.class_name }}"
+                     {% if not forloop.first %}style="display: none;"{% endif %}>
+                    <div class="info-box">
+                        <p class="entry-card-value">{{ class_info.class_name }}</p>
+                    </div>
+
+                    <div class="info-box">
+                        <p class="entry-card-desc-text">Судья</p>
+                        <p class="entry-card-value">{{ class_info.entry.judge_name }}</p>
+                    </div>
+
+                    <div class="info-box">
+                        <p class="entry-card-desc-text">Стоимость</p>
+                        <p class="entry-card-value">{{ class_info.entry.fee }} ₽</p>
+                    </div>
+
+                    <div class="info-box checkbox-group">
+                        <label class="checkbox-label main-entry">
+                            <input type="checkbox"
+                                   name="entries"
+                                   value="{{ class_info.entry.id }}"
+                                   class="entry-checkbox"
+                                   data-can-out-of-class="{{ class_info.entry.can_enter_without_class|yesno:'true,false' }}">
+                            Участвовать
+                        </label>
+
+                        {% if class_info.entry.can_enter_without_class %}
+                            <label class="checkbox-label out-of-class-label">
+                                <input type="checkbox"
+                                       name="entries_out"
+                                       value="{{ class_info.entry.id }}"
+                                       class="entry-checkbox-out">
+                                Вне зачёта
+                            </label>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endfor %}

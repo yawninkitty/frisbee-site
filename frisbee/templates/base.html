@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Фризби-портал{% endblock %}</title>
+    <style></style>  <!-- ← Добавить эту строку -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+
+    {% load static %}
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}" sizes="any">
+    <link rel="stylesheet" href="{% static 'css/stylesheet.css' %}">
+</head>
+<body>
+    <header>
+        <div class="container padding-sm">
+            <!-- Логотип слева -->
+            <a href="{% url 'competitions:index' %}" class="logo">
+                <img src="{% static 'images/logo.svg' %}" alt="Логотип">
+            </a>
+
+            <!-- Навигация по центру (автоматически центрируется) -->
+            <div class="nav-center">
+                <a href="{% url 'competitions:competition_list' %}">Соревнования</a>
+                <a href="{% url 'users:users_list' %}">Пользователи и собаки</a>
+                <a href="{% url 'journal:article_list' %}">Журнал</a>
+            </div>
+
+            <!-- Правая группа -->
+            <div class="nav-right">
+                {% if user.is_authenticated %}
+                    {% if user.profile.is_organizer %}
+                        <a href="{% url 'competitions:organizer_dashboard' %}" class="btn btn-secondary btn-s organizer-btn">
+                            Кабинет организатора
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'users:notifications' %}" class="bell-link">
+                        <img src="{% static 'images/notifications.svg' %}" alt="Уведомления">
+                        {% if unread_count > 0 %}
+                            <span class="bell-badge">{{ unread_count }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'users:profile' %}">
+                        <img src="{% static 'images/profile.svg' %}" alt="Личный кабинет">
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}">
+                        <img src="{% static 'images/profile.svg' %}" alt="Личный кабинет">
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p class="header-md color-salad">фризби</p>
+                <div class="footer-groups">
+                    <div class="footer-link-group">
+                        <span class="header-sm color-white">Спортсменам</span>
+                        <a class="body-text-md color-salad" href="{% url 'competitions:competition_list' %}">Соревнования</a>
+                        <a class="body-text-md color-salad" href="{% url 'users:users_list' %}">Пользователи и собаки</a>
+                        <a class="body-text-md color-salad" href="{% url 'journal:article_list' %}">Журнал</a>
+                    </div>
+                    <div class="footer-link-group">
+                        <span class="header-sm color-white">Организаторам</span>
+                        <a class="body-text-md color-salad" href="#">Как стать организатором</a>
+                        <a class="body-text-md color-salad" href="{% url 'users:users_list' %}">Как создать соревнование</a>
+                        <a class="body-text-md color-salad" href="{% url 'journal:article_list' %}">Как работать с заявками</a>
+                        <a class="body-text-md color-salad" href="{% url 'journal:article_list' %}">Как публиковать результаты</a>
+                    </div>
+                    <div class="footer-link-group">
+                        <span class="header-sm color-white">Документы</span>
+                        <a class="body-text-md-relaxed color-salad" href="#">Политика обработки персональных данных</a>
+                        <a class="body-text-md-relaxed color-salad" href="{% url 'users:users_list' %}">Пользовательское соглашение</a>
+                    </div>
+                </div>
+                <span class="body-text-md color-white">© 2026 Фризби. Все права защищены.</span>
+            </div>
+            <img class="footer-image" src="{% static 'images/dog_main.svg' %}" alt="Иллюстрация собаки">
+        </div>
+
+    </footer>
+
+    <!-- Мобильный навбар (только на мобилках) -->
+    <nav class="mobile-navbar">
+        <div class="nav-items">
+            <!-- Главная -->
+            <a href="{% url 'competitions:index' %}" class="nav-item">
+                <img src="{% static 'images/main_navbar.svg' %}" alt="Главная">
+                <span class="nav-label">главная</span>
+            </a>
+
+            <!-- Организатор -->
+            {% if user.is_authenticated and user.profile.is_organizer %}
+                <a href="{% url 'competitions:organizer_dashboard' %}" class="nav-item">
+                    <img src="{% static 'images/organizer_navbar.svg' %}" alt="Организатор">
+                    <span class="nav-label">организатор</span>
+                </a>
+            {% endif %}
+
+            <!-- Уведомления -->
+            {% if user.is_authenticated %}
+                <a href="{% url 'users:notifications' %}" class="nav-item bell-link">
+                    <img src="{% static 'images/notifications_navbar.svg' %}" alt="Уведомления">
+                    {% if unread_count > 0 %}
+                        <span class="bell-badge">{{ unread_count }}</span>
+                    {% endif %}
+                    <span class="nav-label">уведомления</span>
+                </a>
+            {% endif %}
+
+            <!-- ЛК -->
+            <a href="{% if user.is_authenticated %}{% url 'users:profile' %}{% else %}{% url 'login' %}{% endif %}" class="nav-item">
+                <img src="{% static 'images/profile_navbar.svg' %}" alt="ЛК">
+                <span class="nav-label">профиль</span>
+            </a>
+
+            <!-- Меню -->
+            <button class="nav-item" id="mobile-menu-btn">
+                <img src="{% static 'images/menu_navbar.svg' %}" alt="Меню">
+                <span class="nav-label">меню</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Выпадающее меню -->
+    <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay">
+        <a href="{% url 'competitions:competition_list' %}">Соревнования</a>
+        <a href="{% url 'users:users_list' %}">Пользователи и собаки</a>
+        <a href="{% url 'journal:article_list' %}">Журнал</a>
+    </div>
+
+    {% load static %}
+    <script src="{% static 'js/interactions.js' %}?v=4"></script>
+</body>
+</html>

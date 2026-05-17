@@ -1,0 +1,83 @@
+<!-- competitions/application_success.html -->
+{% extends 'base.html' %}
+
+{% block title %}Заявка отправлена — {{ competition.title }}{% endblock %}
+
+{% load static %}
+
+{% block content %}
+{% include 'includes/breadcrumbs.html' %}
+    <section class="success-register">
+        <div class="container">
+            <div class="success-hero">
+                <h1 class="header-md">Ваши заявки отправлены</h1>
+                <div class="button-group desktop-buttons">
+                    <a href="{% url 'competitions:competition_list' %}" class="btn btn-l btn-secondary">Вернуться к афише</a>
+                    <a href="{% url 'users:profile' %}" class="btn btn-l btn-primary">Посмотреть заявки</a>
+                </div>
+            </div>
+
+            <div class="steps">
+                <h3 class="header-sm">Что делать дальше:</h3>
+                <div class="steps-list">
+                    <div class="step-item">
+                        <img src="{% static 'images/timer.svg' %}" alt="Таймер">
+                        <div class="step-content">
+                            <h4>Дождитесь одобрения заявок</h4>
+                            <p class="body-text-md-relaxed">Отслеживать статус заявок можно в <a href="{% url 'users:profile' %}" class="link-purple-main">личном кабинете</a></p>
+                        </div>
+                    </div>
+
+                    <div class="step-item">
+                        <img src="{% static 'images/payment_card.svg' %}" alt="Карточка">
+                        <div class="step-content">
+                            <h4>Оплатите взнос</h4>
+                            <p class="body-text-md-relaxed">Вы можете связаться с организатором по <a href="{% url 'competitions:competition_detail' competition.id %}" class="link-purple-main">контактам на странице соревнования</a></p>
+                        </div>
+                    </div>
+
+                    <div class="step-item">
+                        <img src="{% static 'images/table_purple.svg' %}" alt="Таблица">
+                        <div class="step-content">
+                            <h4>Смотрите результаты</h4>
+                            <p class="body-text-md-relaxed">Доступ к результатам соревнования откроется сразу в день проведения</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопки для мобилки -->
+            <div class="button-group mobile-buttons">
+                <a href="{% url 'competitions:competition_list' %}" class="btn btn-l btn-secondary">Вернуться к афише</a>
+                <a href="{% url 'users:profile' %}" class="btn btn-l btn-primary">Посмотреть заявки</a>
+            </div>
+
+            <!-- Карусель статей журнала -->
+            <div class="carousel-line">
+                <div class="content">
+                    <div class="carousel-container">
+                        <div class="carousel-header">
+                            <h2 class="header-md">Полезные статьи</h2>
+                            <div class="carousel-actions">
+                                <a class="btn btn-secondary btn-s" href="{% url 'journal:article_list' %}">Смотреть все</a>
+                                <button class="carousel-prev btn btn-secondary btn-s">
+                                    <img src="{% static 'images/arrow.svg' %}" alt="Назад">
+                                </button>
+                                <button class="carousel-next btn btn-secondary btn-s">
+                                    <img src="{% static 'images/arrow.svg' %}" alt="Вперед">
+                                </button>
+                            </div>
+                        </div>
+                        <div class="carousel-grid">
+                            {% for article in recent_articles %}
+                                {% include 'journal/article_card.html' with article=article %}
+                            {% empty %}
+                                <p>Пока нет статей</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

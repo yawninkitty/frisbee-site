@@ -1,0 +1,23 @@
+{% load static %}
+
+<div class="article-card">
+    <a href="{{ article.get_absolute_url }}" class="article-card-link">
+        <div class="article-cover">
+            {% if article.cover_image %}
+                <img src="{{ article.cover_image.url }}" alt="{{ article.title }}">
+            {% else %}
+                <div class="cover-placeholder">📸</div>
+            {% endif %}
+        </div>
+        <div class="article-card-content">
+            <div class="article-card-header">
+                <h3 class="header-sm">{{ article.title }}</h3>
+                <span class="tag bg-color-gray-border">{{ article.get_tag_display_name }}</span>
+            </div>
+            <div class="article-meta">
+                <span>{{ article.created_at|date:"d.m.Y" }}</span>
+                <span><img src="{% static 'images/timer.svg' %}" alt="Время прочтения"> {{ article.reading_time }} мин</span>
+            </div>
+        </div>
+    </a>
+</div>

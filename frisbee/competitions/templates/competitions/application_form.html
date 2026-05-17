@@ -1,0 +1,49 @@
+{% load static %}
+
+<div class="application-form" id="app-form-{{ form_id }}" data-dog-id="{{ dog.id }}" data-form-id="{{ form_id }}">
+    <div class="two-columns">
+        <div class="left-column">
+            <div class="dog-card">
+                <div class="dog-avatar-container">
+                    {% if dog.avatar %}
+                        <img src="{{ dog.avatar.url }}" alt="{{ dog.name }}" class="dog-avatar">
+                    {% else %}
+                        <img src="{% static 'images/dog_avatar_placeholder.svg' %}" alt="{{ dog.name }}" class="dog-avatar">
+                    {% endif %}
+
+                    {% if dog.owner != user %}
+                        <span class="tag bg-color-white">
+                            <img src="{% static 'images/profile.svg' %}" alt="Владелец">
+                            {{ dog.owner.get_full_name|default:dog.owner.username }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div class="dog-card-content">
+                    <div class="dog-card-info">
+                        <h3 class="header-sm">{{ dog.name }}</h3>
+
+                        <div class="card-tags">
+                            <span class="tag bg-color-salad-main">{{ dog.get_sport_class_display }}</span>
+                            <span class="tag bg-color-gray-border">{{ dog.breed|default:"Порода не указана" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-actions">
+                        <button class="btn btn-secondary btn-s change-dog-btn" data-form-id="{{ form_id }}">Поменять</button>
+                        <button class="btn btn-secondary btn-s remove-dog-btn" data-form-id="{{ form_id }}">Убрать</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-column">
+            {{ entries_html|safe }}
+            <div class="floating-label-group">
+                <textarea rows="6" class="comment-input input" data-form-id="{{ form_id }}" placeholder=" "></textarea>
+                <label>Комментарий</label>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" name="dog_id" value="{{ dog.id }}" class="dog-id-input" data-form-id="{{ form_id }}">
+</div>

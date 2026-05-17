@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Пользователи и собаки{% endblock %}
+
+{% block content %}
+<section class="search-users">
+    <div class="search-filters-panel container">
+        <div class="search-header">
+            <h1 class="header-lg">Пользователи и собаки</h1>
+            <div class="search-and-filters">
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="Поиск по имени, фамилии или кличке..." class="input search-input">
+                </div>
+                <div class="filter-container">
+                    <div class="chips-container" id="type-chips">
+                        <button class="chip active" data-filter="type" data-value="all">Все</button>
+                        <button class="chip" data-filter="type" data-value="athletes">Спортсмены</button>
+                        <button class="chip" data-filter="type" data-value="organizers">Организаторы</button>
+                        <button class="chip" data-filter="type" data-value="dogs">Собаки</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="results-container" class="competitions-grid">
+            <!-- Сюда будут загружаться карточки -->
+        </div>
+
+        <!-- Пустая выдача -->
+        <div id="results-empty" class="articles-empty" style="display: none;">
+            <img src="{% static 'images/dog_fell.svg' %}" alt="Ничего не найдено">
+            <p class="body-text-lg color-gray-middle">Ничего не найдено</p>
+        </div>
+
+        <div id="loader" class="loader" style="display: none;">Загрузка...</div>
+    </div>
+</section>
+
+<script>
+    window.currentUserId = {{ request.user.id|default:'null' }};
+</script>
+
+<form style="display: none;">
+    {% csrf_token %}
+</form>
+
+<script src="{% static 'js/users_search.js' %}?v=4"></script>
+{% endblock %}

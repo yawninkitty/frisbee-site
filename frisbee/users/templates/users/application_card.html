@@ -1,0 +1,171 @@
+{% load static %}
+
+<div class="application-card" data-app-id="{{ app.id }}" data-app-status="{{ app.status }}">
+    <div class="two-columns">
+        <div class="left-column">
+            <div class="application-card-header">
+                <div class="status-row">
+                    <span class="tag status-tag status-{{ app.status }}">{{ app.get_status_display }}</span>
+                    {% if app.status == 'rejected' and app.organizer_comment %}
+                        <button class="why-rejected-btn link-purple-main" data-comment="{{ app.organizer_comment }}">Почему?</button>
+                    {% endif %}
+                </div>
+                <div>
+                    <a href="{% url 'competitions:competition_detail' app.competition.id %}" class="header-sm link-black">{{ app.competition.title }}</a>
+                    <div class="tags-group">
+                        <span class="tag bg-color-gray-border">{{ app.competition.date|date:"j E Y" }}</span>
+                        <span class="tag bg-color-gray-border">{{ app.competition.city|default:"Город не указан" }}</span>
+                    </div>
+                    {% if app.competition.payment_deadline %}
+                        <span class="tag bg-color-gray-border">Оплата до {{ app.competition.payment_deadline|date:"j E Y" }}</span>
+                    {% endif %}
+                </div>
+                <p class="body-text-md-relaxed">{{ app.competition.location }}</p>
+            </div>
+
+            <!-- Контейнер для карточек (человек и собака) -->
+            <div class="user-and-dog-cards">
+                {% if app.dog.owner == request.user and app.user != request.user %}
+                    <div class="application-applicant">
+                        <div class="application-avatar-container">
+                            <img src="{% if app.user.profile.avatar %}
+                                        {{ app.user.profile.avatar.url }}
+                                      {% elif app.user.profile.gender == 'male' %}
+                                        {% static 'images/man_avatar_placeholder.svg' %}
+                                      {% else %}
+                                        {% static 'images/woman_avatar_placeholder.svg' %}
+                                     {% endif %}"
+                                 alt="Аватар">
+                        </div>
+                        <div>
+                            <a href="{% url 'users:user_profile' app.user.id %}" class="link-black header-2sm">
+                                {{ app.user.get_full_name|default:app.user.username }}
+                            </a>
+                            <p class="body-text-sm color-gray-middle">
+                                {% if app.user.profile.is_organizer %}Организатор{% else %}Спортсмен{% endif %} ·
+                                {{ app.user.profile.get_sport_class_display|default:"Класс не указан" }}
+                            </p>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="application-card-dog">
+                    <div class="application-avatar-container">
+                        <img src="{% if app.dog.avatar %}{{ app.dog.avatar.url }}{% else %}{% static 'images/dog_avatar_placeholder.svg' %}{% endif %}" alt="Аватар собаки">
+                    </div>
+                    <div>
+                        <div class="dog-name-wrapper">
+                            <a href="{% url 'users:dog_profile' app.dog.id %}" class="header-2sm link-black">{{ app.dog.name }}</a>
+                            {% if app.dog.owner != request.user %}
+                                <p class="dog-owner header-2sm color-gray-middle">{{ app.dog.owner.get_full_name|default:app.dog.owner.username }}</p>
+                            {% endif %}
+                        </div>
+                        <p class="body-text-sm color-gray-middle">
+                            {{ app.dog.breed|default:"Порода не указана" }} · {{ app.dog.get_sport_class_display }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="entries-container">
+                <div class="entries-list" id="entries-list-{{ app.id }}">
+                    {% for app_entry in app.entries_list|slice:":2" %}
+                        <div class="entry-item">
+                            <div class="entry-header">
+                                <span class="header-2sm">{{ app_entry.entry.get_discipline_display }}</span>
+                                <span class="header-2sm color-purple-main-click">{{ app_entry.entry.get_sport_class_display }}</span>
+                            </div>
+                            <div class="entry-details">
+                                <span class="body-text-md color-gray-middle">Судья</span>
+                                <span class="body-text-md">
+                                    {% with entry=app_entry.entry %}
+                                        {% if entry.assigned_judges.first %}
+                                            {{ entry.assigned_judges.first.user.get_full_name|default:entry.assigned_judges.first.user.username }}
+                                        {% elif entry.judge_name %}
+                                            {{ entry.judge_name }}
+                                        {% else %}
+                                            Не указан
+                                        {% endif %}
+                                    {% endwith %}
+                                </span>
+                            </div>
+                            <div class="entry-fee">
+                                <span class="body-text-md">{{ app_entry.entry.fee|floatformat:0 }} ₽</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="entries-full-list" id="entries-full-{{ app.id }}" style="display: none;">
+                    {% for app_entry in app.entries_list %}
+                        <div class="entry-item">
+                            <div class="entry-header">
+                                <span class="header-2sm">{{ app_entry.entry.get_discipline_display }}</span>
+                                <span class="header-2sm color-purple-main-click">{{ app_entry.entry.get_sport_class_display }}</span>
+                            </div>
+                            <div class="entry-details">
+                                <span class="body-text-md color-gray-middle">Судья</span>
+                                <span class="body-text-md">
+                                    {% with entry=app_entry.entry %}
+                                        {% if entry.assigned_judges.first %}
+                                            {{ entry.assigned_judges.first.user.get_full_name|default:entry.assigned_judges.first.user.username }}
+                                        {% elif entry.judge_name %}
+                                            {{ entry.judge_name }}
+                                        {% else %}
+                                            Не указан
+                                        {% endif %}
+                                    {% endwith %}
+                                </span>
+                            </div>
+                            <div class="entry-fee">
+                                <span class="body-text-md">{{ app_entry.entry.fee|floatformat:0 }} ₽</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {% if app.entries_list|length > 2 %}
+                    <button class="btn-show-entries" data-app-id="{{ app.id }}">
+                        Показать все ({{ app.entries_list|length }})
+                    </button>
+                {% endif %}
+            </div>
+
+            <div class="right-column-bottom">
+                <div class="total-price">
+                    <span class="header-2sm">Итого к оплате:</span>
+                    <span class="body-text-md">{{ app.get_total_fee|floatformat:0 }} ₽</span>
+                </div>
+
+                <div class="application-card-actions">
+                    {% if app.status == 'waiting_owner' and app.dog.owner == request.user %}
+                        <span class="info-text body-text-md-relaxed">Другой спортсмен хочет подать эту заявку с вашей собакой</span>
+                        <button class="approve-owner-btn btn-primary" data-app-id="{{ app.id }}">Подтвердить</button>
+                        <button class="reject-owner-btn btn-secondary" data-app-id="{{ app.id }}">Отклонить</button>
+                    {% endif %}
+
+                    {% if app.status == 'pending' or app.status == 'waiting_owner' %}
+                        {% if app.user == request.user %}
+                            <button class="cancel-application-btn btn-secondary" data-app-id="{{ app.id }}">Отменить заявку</button>
+                        {% endif %}
+                    {% endif %}
+
+                    <!-- Кнопка прикрепления чека (только для одобренных заявок, где пользователь — автор) -->
+                    {% if app.status == 'approved' and app.user == request.user %}
+                        {% if not app.payment_receipt %}
+                            <button class="upload-receipt-btn btn-primary" data-app-id="{{ app.id }}">Прикрепить чек</button>
+                        {% else %}
+                            <div class="receipt-info">
+                                <a href="{{ app.payment_receipt.url }}" target="_blank" class="link-purple-main body-text-md">Посмотреть чек</a>
+                                <button class="upload-receipt-btn btn-secondary" data-app-id="{{ app.id }}">Заменить</button>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

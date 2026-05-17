@@ -1,0 +1,20 @@
+{% load static %}
+
+<div class="notification-item {% if not notification.is_read %}unread{% endif %}" data-id="{{ notification.id }}">
+    <div class="notification-content">
+        <div class="notification-header">
+            <span class="notification-title header-2sm">{{ notification.title }}</span>
+            <span class="notification-time body-text-sm color-gray-middle">{{ notification.created_at|date:"d.m.Y H:i" }}</span>
+        </div>
+
+        <div class="notification-message body-text-sm-relaxed">
+            {{ notification.message|linebreaksbr }}
+        </div>
+
+        {% if notification.link %}
+            <a href="{{ notification.link }}" class="notification-link body-text-sm">
+                Перейти →
+            </a>
+        {% endif %}
+    </div>
+</div>

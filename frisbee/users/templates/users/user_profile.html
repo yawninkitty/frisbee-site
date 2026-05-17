@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ profile_user.get_full_name|default:profile_user.username }}{% endblock %}
+
+{% block content %}
+<section class="profile-container">
+    <div class="container">
+        <!-- Шапка профиля -->
+        <div class="profile-header">
+            <div class="profile-header-content">
+                <div class="profile-avatar">
+                    {% if profile_user.profile.avatar %}
+                        <img src="{{ profile_user.profile.avatar.url }}" alt="Аватар">
+                    {% else %}
+                        {% if profile_user.profile.gender == 'male' %}
+                            <img src="{% static 'images/man_avatar_placeholder.svg' %}" alt="Аватар">
+                        {% else %}
+                            <img src="{% static 'images/woman_avatar_placeholder.svg' %}" alt="Аватар">
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div class="profile-info">
+                    <h1 class="header-md">{{ profile_user.first_name }} {{ profile_user.last_name }}</h1>
+                    <div class="card-tags">
+                        <span class="tag bg-color-salad-main">
+                            {% if is_organizer %}Организатор{% else %}Спортсмен{% endif %}
+                        </span>
+                        <span class="tag bg-color-gray-border">{{ profile_user.profile.get_sport_class_display|default:"Не указан" }}</span>
+                        <span class="tag bg-color-gray-border">{{ profile_user.profile.get_age_display|default:"Возраст не указан" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайдер вкладок -->
+        <div class="form-tabs slider">
+            {% if is_organizer %}
+                <button class="form-tab slider-btn active" data-tab="organizer">Организатор</button>
+            {% endif %}
+            <button class="form-tab slider-btn {% if not is_organizer %}active{% endif %}" data-tab="results">Результаты</button>
+            <button class="form-tab slider-btn" data-tab="dogs">Собаки</button>
+        </div>
+
+        <!-- Вкладка: Результаты -->
+        <div id="tab-results" class="tab-content {% if not is_organizer %}active{% endif %}">
+            {% if results %}
+                <div class="results-filters">
+                    <div class="filter-group">
+                        <div class="chips-container" id="discipline-tabs"></div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="chips-container" id="class-tabs"></div>
+                    </div>
+                </div>
+                <div class="results-table-wrapper">
+                    <div id="results-table-container">
+                        <p class="empty-message">Выберите дисциплину и класс для просмотра результатов</p>
+                    </div>
+                </div>
+            {% else %}
+                <p class="empty-message">Нет результатов участия в соревнованиях</p>
+            {% endif %}
+        </div>
+
+        <!-- Вкладка: Собаки -->
+        <div id="tab-dogs" class="tab-content">
+            <div class="carousel-line">
+                <div class="content">
+                    <div class="carousel-container">
+                        <div class="carousel-header">
+                            <h1 class="header-md">Собаки пользователя</h1>
+                            <div class="carousel-actions" style="margin-left: auto;">
+                                <button class="carousel-prev btn btn-secondary btn-s">
+                                    <img src="{% static 'images/arrow.svg' %}" alt="Назад">
+                                </button>
+                                <button class="carousel-next btn btn-secondary btn-s">
+                                    <img src="{% static 'images/arrow.svg' %}" alt="Вперед">
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="carousel-grid">
+                            {% for dog in dogs %}
+                                <div class="dog-card" data-dog-id="{{ dog.id }}">
+                                    <div class="dog-avatar-container">
+                                        {% if dog.avatar %}
+                                            <img src="{{ dog.avatar.url }}" alt="{{ dog.name }}" class="dog-avatar">
+                                        {% else %}
+                                            <img src="{% static 'images/dog_avatar_placeholder.svg' %}" alt="{{ dog.name }}" class="dog-avatar">
+                                        {% endif %}
+                                    </div>
+                                    <div class="dog-card-content">
+                                        <div class="dog-card-info">
+                                            <a href="{% url 'users:dog_profile' dog.id %}" class="link-black">
+                                                <h3 class="header-sm">{{ dog.name }}</h3>
+                                            </a>
+                                            <p class="body-text-sm color-gray-middle">
+                                                {{ dog.get_gender_display|default:"Пол не указан" }} ·
+                                                {{ dog.get_age_display }} ·
+                                                {% if dog.height %}
+                                                    {{ dog.height|floatformat:"0" }} см
+                                                {% else %}
+                                                    рост неизвестен
+                                                {% endif %}
+                                            </p>
+                                            <div class="card-tags">
+                                                <span class="tag bg-color-salad-main">{{ dog.get_sport_class_display }}</span>
+                                                <span class="tag bg-color-gray-border">{{ dog.breed|default:"Порода не указана" }}</span>
+                                            </div>
+                                        </div>
+                                        <a href="{% url 'users:dog_profile' dog.id %}" class="btn btn-secondary btn-s">Подробнее</a>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <p class="empty-message">Нет добавленных собак</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка: Организатор (только для организаторов) -->
+        {% if is_organizer %}
+        <div id="tab-organizer" class="tab-content active">
+            <!-- Фильтры чипами -->
+            <div class="filters-row">
+                <div class="filter-group">
+                    <div class="chips-container" id="role-chips">
+                        <button class="chip active" data-role="organizer">Организатор</button>
+                        <button class="chip" data-role="judge">Судья</button>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <div class="chips-container" id="period-chips">
+                        <button class="chip active" data-period="upcoming">Предстоящие</button>
+                        <button class="chip" data-period="past">Прошедшие</button>
+                    </div>
+                </div>
+            </div>
+            <div id="organizer-competitions-container" class="competitions-grid">
+                <!-- Соревнования будут загружены через JS -->
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Безопасная передача данных в JS через json_script -->
+{{ is_organizer|json_script:"is-organizer-data" }}
+{{ results|json_script:"results-data" }}
+{{ organized_competitions|json_script:"organized-comps-data" }}
+{{ judging_competitions|json_script:"judging-comps-data" }}
+
+<script>
+    // Загружаем данные из json_script тегов
+    var isOrganizer = JSON.parse(document.getElementById('is-organizer-data').textContent);
+    var resultsData = JSON.parse(document.getElementById('results-data').textContent);
+    var organizedComps = JSON.parse(document.getElementById('organized-comps-data').textContent);
+    var judgingComps = JSON.parse(document.getElementById('judging-comps-data').textContent);
+
+    // Функция для получения CSRF токена
+    function getCsrfToken() {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, 10) === 'csrftoken=') {
+                    cookieValue = decodeURIComponent(cookie.substring(10));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    console.log('=== Данные из Django ===');
+    console.log('isOrganizer:', isOrganizer);
+    console.log('organizedComps:', organizedComps);
+    console.log('judgingComps:', judgingComps);
+</script>
+
+<script src="{% static 'js/user_profile.js' %}?v=13"></script>
+{% endblock %}

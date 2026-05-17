@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Запись на {{ competition.title }}{% endblock %}
+
+{% load static %}
+
+{% block content %}
+{% include 'includes/breadcrumbs.html' %}
+    <section id="application-group">
+        <!-- Шаг 1: Выбор собаки -->
+        <div class="container">
+            <div id="step-select-dog" class="dog-selection-section">
+            <div class="carousel-line">
+                <div class="padding-lg">
+                    <div class="content">
+                        <h1 class="header-md">Выберите собаку</h1>
+                        <div class="carousel-container">
+                            <div class="carousel-header">
+                                <div class="slider">
+                                    <button class="slider-btn active" data-tab="my">Мои собаки</button>
+                                    <button class="slider-btn" data-tab="other">Другие собаки</button>
+                                </div>
+                                <div class="carousel-actions">
+                                    <input type="text" id="dog-search" class="input search-input" placeholder="Поиск по кличке">
+                                    <button class="carousel-prev btn btn-secondary btn-s">
+                                        <img src="{% static 'images/arrow.svg' %}" alt="Назад">
+                                    </button>
+                                    <button class="carousel-next btn btn-secondary btn-s">
+                                        <img src="{% static 'images/arrow.svg' %}" alt="Вперед">
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="carousel-grid" id="my-dogs-carousel">
+                                {% for dog in dogs %}
+                                    {% include 'users/dog_card_for_select.html' with dog=dog show_select_button=True %}
+                                {% empty %}
+                                    <p>У вас пока нет собак.</p>
+                                {% endfor %}
+                            </div>
+
+                            <div class="carousel-grid" id="other-dogs-carousel" style="display: none;">
+                                <div class="loader">Загрузка...</div>
+                            </div>
+                            <div class="carousel-dots"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="add-dog-container">
+                <button id="show-add-dog-from-select" class="btn btn-primary btn-l">
+                    Добавить собаку +
+                </button>
+            </div>
+        </div>
+
+            <!-- Шаг 2: Контейнер для форм заявок -->
+            <div id="applications-container">
+                <!-- Сюда будут добавляться формы заявок -->
+            </div>
+
+            <div class="actions-group">
+                <button id="add-another-dog-btn" class="add-dog-btn btn btn-secondary btn-l">Добавить заявку +</button>
+
+                <div class="submit-group">
+                    <button id="submit-all-applications" class="submit-btn btn btn-primary btn-l">Отправить все заявки</button>
+                    <p class="payment-info body-text-md-relaxed color-gray-middle">Оплата напрямую организатору после одобрения заявок</p>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Модальное окно для выбора собаки -->
+    <div id="dog-select-modal-overlay" class="modal-overlay" style="display:none;"></div>
+    <div id="dog-select-modal" class="modal-container" style="display:none;">
+        <div class="modal-header">
+            <h2 class="header-md">Выберите собаку</h2>
+            <button id="close-dog-select-modal" class="modal-close">
+                <img src="{% static 'images/cross.svg' %}" alt="Закрыть">
+            </button>
+        </div>
+        <div id="modal-select-content">
+            <!-- Сюда будет подгружаться содержимое -->
+        </div>
+    </div>
+
+    <!-- Модальное окно для добавления/редактирования собаки (общее) -->
+    {% include 'users/dog_add_edit_modal.html' %}
+
+    <script>
+        // Данные о собаках из Django
+        window.dogsData = [
+            {% for dog in dogs %}
+                {
+                    id: {{ dog.id }},
+                    name: "{{ dog.name|escapejs }}",
+                    breed: "{{ dog.breed|default:'—'|escapejs }}",
+                    sport_class: "{{ dog.get_sport_class_display|escapejs }}",
+                    avatar_url: "{% if dog.avatar %}{{ dog.avatar.url }}{% endif %}"
+                },
+            {% endfor %}
+        ];
+        window.competitionId = {{ competition.id }};
+        window.entriesByDiscipline = {{ entries_by_discipline|safe }};
+    </script>
+
+    {% load static %}
+    <script src="{% static 'js/dog_add_edit_modal.js' %}?v=2"></script>
+    <script src="{% static 'js/register.js' %}?v=10"></script>
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+{% endblock %}

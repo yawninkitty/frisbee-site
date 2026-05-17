@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Результаты: {{ competition.title }}{% endblock %}
+
+{% block content %}
+{% include 'includes/breadcrumbs.html' %}
+<section id="public-results">
+    <div class="container">
+        <div class="results-header">
+            <h1 class="header-md">{{ competition.title }}</h1>
+        </div>
+
+        <!-- Переключатель: Результаты / Стартовый протокол -->
+        <div class="form-tabs slider">
+            <button class="form-tab slider-btn active" data-tab="results">Результаты</button>
+            <button class="form-tab slider-btn" data-tab="start-order">Стартовые протоколы</button>
+        </div>
+
+        <div class="results-filters">
+            <div class="filter-group">
+                <div class="chips-container" id="discipline-tabs"></div>
+            </div>
+            <div class="filter-group">
+                <div class="chips-container" id="class-tabs"></div>
+            </div>
+        </div>
+
+        <!-- Вкладка: Результаты -->
+        <div id="tab-results" class="results-table-wrapper">
+            <div class="results-title">
+                <h3 id="current-entry-title" class="header-md"></h3>
+                <div class="results-actions">
+                    <button onclick="showExportModal({{ competition.id }})" class="btn btn-secondary btn-s">
+                        Скачать результаты
+                    </button>
+                </div>
+            </div>
+            <div id="results-table-container">
+                <p class="empty-message">Выберите дисциплину и класс для просмотра результатов</p>
+            </div>
+        </div>
+
+        <!-- Вкладка: Стартовый протокол -->
+        <div id="tab-start-order" class="results-table-wrapper" style="display: none;">
+            <div class="results-title">
+                <h3 id="start-order-entry-title" class="header-md"></h3>
+            </div>
+            <div id="start-order-table-container">
+                <p class="empty-message">Выберите дисциплину и класс</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Модальное окно экспорта -->
+<div id="exportModal" class="modal-overlay" style="display: none;">
+    <div class="modal-container" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3 class="header-sm">Экспорт результатов</h3>
+            <button class="modal-close" id="closeExportModalBtn">
+                <img src="{% static 'images/cross.svg' %}" alt="Закрыть">
+            </button>
+        </div>
+        <div id="modal-content">
+            <div class="form-container">
+                <div class="radio-group">
+                    <div class="radio-group-label">Формат:</div>
+                    <div class="radio-options-row">
+                        <label class="radio-option">
+                            <input type="radio" name="export_format" value="pdf" checked>
+                            <span>PDF</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="export_format" value="excel">
+                            <span>Excel</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="radio-group">
+                    <div class="radio-group-label">Выберите зачёты:</div>
+                    <div id="entriesCheckboxes" class="checkbox-group">
+                        {% for entry in entries %}
+                            <label class="checkbox-custom">
+                                <input type="checkbox" name="export_entries" value="{{ entry.id }}" checked>
+                                <span class="checkbox-text">{{ entry.get_discipline_display }} — {{ entry.get_sport_class_display }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button id="cancelExportBtn" class="btn btn-secondary btn-s">Отмена</button>
+                    <button id="confirmExportBtn" class="btn btn-primary btn-s">Скачать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const competitionId = {{ competition.id }};
+    const exportUrl = `/competitions/${competitionId}/export/`;
+</script>
+<script id="entries-data" type="application/json">
+    [
+        {% for entry in entries %}
+            {
+                "id": {{ entry.id }},
+                "discipline": "{{ entry.discipline }}",
+                "discipline_name": "{{ entry.get_discipline_display }}",
+                "class_code": "{{ entry.sport_class }}",
+                "class_name": "{{ entry.get_sport_class_display }}"
+            }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]
+</script>
+<script src="{% static 'js/competition_results.js' %}?v=1"></script>
+<script src="{% static 'js/export.js' %}?v=1"></script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ dog.name }}{% endblock %}
+
+{% block content %}
+<section class="profile-container">
+    <div class="container">
+        <!-- Шапка профиля собаки -->
+        <div class="profile-header">
+            <div class="profile-header-content">
+                <div class="profile-avatar">
+                    {% if dog.avatar %}
+                        <img src="{{ dog.avatar.url }}" alt="{{ dog.name }}">
+                    {% else %}
+                        <img src="{% static 'images/dog_avatar_placeholder.svg' %}" alt="{{ dog.name }}">
+                    {% endif %}
+                </div>
+                <div class="profile-info">
+                    <h1 class="header-md">{{ dog.name }}</h1>
+                    <div class="card-tags">
+                        <span class="tag bg-color-salad-main">{{ dog.get_sport_class_display }}</span>
+                        <span class="tag bg-color-gray-border">
+                            {% if dog.gender == 'male' %}Кобель{% elif dog.gender == 'female' %}Сука{% else %}Пол не указан{% endif %}
+                        </span>
+                        <span class="tag bg-color-gray-border">{{ dog.get_age_display }}</span>
+                    </div>
+                    <div class="owner-link">
+                        <a href="{% url 'users:user_profile' dog.owner.id %}" class="link-purple-main">
+                            <span class="tag bg-color-gray-border owner-tag">
+                                <img src="{% static 'images/profile.svg' %}" alt="Владелец">
+                                {{ dog.owner.get_full_name|default:dog.owner.username }}
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка: Результаты -->
+        <div id="tab-results" class="tab-content active">
+            {% if results %}
+                <div class="results-filters">
+                    <div class="filter-group">
+                        <div class="chips-container" id="discipline-tabs"></div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="chips-container" id="class-tabs"></div>
+                    </div>
+                </div>
+                <div class="results-table-wrapper">
+                    <div id="results-table-container">
+                        <p class="empty-message">Выберите дисциплину и класс для просмотра результатов</p>
+                    </div>
+                </div>
+            {% else %}
+                <p class="empty-message">Нет результатов участия в соревнованиях</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Безопасная передача данных в JS через json_script -->
+{{ results|json_script:"results-data" }}
+
+<script>
+    // Загружаем данные из json_script тегов
+    var resultsData = JSON.parse(document.getElementById('results-data').textContent);
+
+    console.log('=== Данные из Django ===');
+    console.log('resultsData:', resultsData);
+</script>
+
+<script src="{% static 'js/dog_profile.js' %}?v=1"></script>
+{% endblock %}

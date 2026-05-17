@@ -1,0 +1,32 @@
+{% load static %}
+
+<div class="dog-card" data-dog-id="{{ dog_data.id }}">
+    <div class="dog-avatar-container">
+        {% if dog_data.avatar %}
+            <img src="{{ dog_data.avatar }}" alt="{{ dog_data.name }}" class="dog-avatar">
+        {% else %}
+            <img src="{% static 'images/dog_avatar_placeholder.svg' %}" alt="{{ dog_data.name }}" class="dog-avatar">
+        {% endif %}
+    </div>
+
+    <div class="dog-card-content">
+        <div class="dog-card-info">
+            <a href="/users/dogs/{{ dog_data.id }}/" class="link-black">
+                <h3 class="header-sm">{{ dog_data.name }}</h3>
+            </a>
+
+            <p class="body-text-sm color-gray-middle">
+                {{ gender_text }} ·
+                {{ age_text }} ·
+                {{ height_text }}
+            </p>
+
+            <div class="card-tags">
+                <span class="tag bg-color-salad-main">{{ dog_class }}</span>
+                <span class="tag bg-color-gray-border">{{ breed }}</span>
+            </div>
+        </div>
+
+        <a href="/users/dogs/{{ dog_data.id }}/" class="btn btn-secondary btn-s">Подробнее</a>
+    </div>
+</div>

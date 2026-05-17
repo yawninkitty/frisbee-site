@@ -1,0 +1,14 @@
+{% if breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+    {% for crumb in breadcrumbs %}
+        {% if not forloop.first %}
+            <span class="breadcrumbs-separator">·</span>
+        {% endif %}
+        {% if crumb.url %}
+            <a href="{{ crumb.url }}" class="breadcrumbs-link">{{ crumb.name }}</a>
+        {% else %}
+            <span class="breadcrumbs-current">{{ crumb.name }}</span>
+        {% endif %}
+    {% endfor %}
+</nav>
+{% endif %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ article.title }}{% endblock %}
+
+{% block content %}
+<section class="article-page">
+    <div class="container">
+        <!-- Заголовок -->
+        <div class="article-header">
+            <h1 class="header-md">{{ article.title }}</h1>
+            <span class="tag bg-color-gray-border">{{ article.get_tag_display_name }}</span>
+            <div class="article-meta">
+                <span class="body-text-sm color-gray-middle">{{ article.created_at|date:"d.m.Y" }}</span>
+                <span class="body-text-sm color-gray-middle"><img src="{% static 'images/timer.svg' %}" alt="Время прочтения">{{ article.reading_time }} мин</span>
+            </div>
+        </div>
+
+        <!-- Обложка -->
+        {% if article.cover_image %}
+            <div class="article-image">
+                <img src="{{ article.cover_image.url }}" alt="{{ article.title }}">
+            </div>
+        {% endif %}
+
+        <!-- Содержание -->
+        <div class="article-content body-text-lg-relaxed">
+            {{ article.content|safe }}
+        </div>
+
+        <!-- Кнопка назад -->
+        <div class="article-back-link">
+            <a href="{% url 'journal:article_list' %}" class="btn btn-secondary btn-l">Назад к журналу</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

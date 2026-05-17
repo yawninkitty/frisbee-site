@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ввод результатов: {{ entry.get_discipline_display }} — {{ entry.get_sport_class_display }}{% endblock %}
+
+{% block content %}
+{% include 'includes/breadcrumbs.html' %}
+<section class="enter-results-section">
+    <div class="container">
+        <a href="{% url 'competitions:manage_competition' competition.id %}?tab=results" class="back-link body-text-md">
+            ← Назад к управлению
+        </a>
+
+        <div class="results-entry-title">
+            <span class="header-md">{{ entry.get_discipline_display }}</span>
+            <span class="header-md color-gray-middle">{{ entry.get_sport_class_display }}</span>
+        </div>
+
+        <!-- Единый контейнер для всего -->
+        <div class="results-form-wrapper">
+            <h3 class="header-sm">Участник</h3>
+            <!-- Кастомный селект -->
+            <div class="custom-select-wrapper" id="participant-select-wrapper">
+                <div class="floating-label-group">
+                    <div class="custom-select-field">
+                        <div class="custom-select-trigger">
+                            <span class="custom-select-value"></span>
+                        </div>
+                        <div class="custom-select-dropdown">
+                            {% for participant in participants %}
+                                <div class="custom-select-option" data-value="{{ participant.result_id }}" data-status="{{ participant.status }}" data-data='{{ participant.data|safe }}'>
+                                    {{ participant.user_name }} и {{ participant.dog_name }}
+                                    {% if participant.data and participant.data|length > 0 %}
+                                        ✓
+                                    {% else %}
+                                        (не заполнено)
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" class="custom-select-input" name="participant_id" id="participant-id-input">
+                    </div>
+                    <label>Выберите пару</label>
+                </div>
+            </div>
+
+            <!-- Радио кнопки статуса участника -->
+            <div class="radio-group" id="status-radio-group" style="display: none;">
+                <span class="radio-group-label">Статус участника</span>
+                <div class="radio-options-row">
+                    <label class="radio-option">
+                        <input type="radio" name="participant_status" value="active" checked>
+                        <span>Активен</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="participant_status" value="disqualified">
+                        <span>Снят</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Форма с бросками -->
+            <div id="results-form" class="results-form"></div>
+
+        </div>
+        <div class="form-actions">
+            <button id="save-result-btn" class="btn btn-primary btn-l">Сохранить результат</button>
+            <button id="prev-participant-btn" class="btn btn-l btn-secondary">← Предыдущий</button>
+            <button id="next-participant-btn" class="btn btn-l btn-secondary">Следующий →</button>
+        </div>
+    </div>
+</section>
+
+<!-- ========== ШАБЛОНЫ ФОРМ ========== -->
+
+<!-- Шаблон для буллсая -->
+<template id="bullseye-template">
+    <div id="bullseye-form">
+        <h3 class="throws-header header-sm">Броски</h3>
+        <div id="throws-container"></div>
+        <button type="button" id="add-throw-btn" class="btn btn-s btn-secondary">+ Добавить бросок</button>
+        <div class="results-stats">
+            <div class="stat-item">
+                <span class="stat-label header-2sm">Сумма бросков</span>
+                <span class="stat-value" id="total-sum">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label header-2sm">Количество бросков</span>
+                <span class="stat-value" id="throws-count">0</span>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Шаблон для одного броска в буллсае -->
+<template id="throw-item-template">
+    <div class="throw-item">
+        <div class="floating-label-group">
+            <input type="number" step="1" class="input throw-value" placeholder=" ">
+            <label>Бросок</label>
+        </div>
+        <button type="button" class="remove-throw modal-close">
+            <img src="{% static 'images/cross.svg' %}" alt="Закрыть">
+        </button>
+    </div>
+</template>
+
+<!-- Шаблон для дальности -->
+<template id="distance-template">
+    <div id="distance-form">
+        <h3 class="header-sm">Броски</h3>
+        <div class="floating-label-group">
+            <input type="number" step="0.5" class="input" id="attempt-1" placeholder=" ">
+            <label for="attempt-1">Попытка 1 (м)</label>
+        </div>
+        <div class="floating-label-group">
+            <input type="number" step="0.5" class="input" id="attempt-2" placeholder=" ">
+            <label for="attempt-2">Попытка 2 (м)</label>
+        </div>
+        <div class="floating-label-group">
+            <input type="number" step="0.5" class="input" id="attempt-3" placeholder=" ">
+            <label for="attempt-3">Попытка 3 (м)</label>
+        </div>
+        <div class="floating-label-group">
+            <input type="number" step="0.5" class="input" id="last-chance" placeholder=" ">
+            <label for="last-chance">Последний шанс (м)</label>
+        </div>
+        <div class="results-stats">
+            <div class="stat-item">
+                <span class="stat-label header-2sm">Лучший (м)</span>
+                <span class="stat-value" id="best-value">0</span>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Шаблон для точности -->
+<template id="accuracy-template">
+    <div id="accuracy-form">
+        <h3 class="header-sm">Броски</h3>
+        <div class="accuracy-grid">
+            <div class="accuracy-col" id="accuracy-left-col"></div>
+            <div class="accuracy-col" id="accuracy-right-col"></div>
+        </div>
+        <div class="results-stats">
+            <div class="stat-item">
+                <span class="stat-label header-2sm">Сумма 5 лучших</span>
+                <span class="stat-value" id="top-five-sum">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label header-2sm">Общая сумма</span>
+                <span class="stat-value" id="accuracy-total-sum">0</span>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Шаблон для поля броска в точности -->
+<template id="accuracy-throw-template">
+    <div class="floating-label-group">
+        <input type="number" step="1" class="input throw-value" placeholder=" ">
+        <label>Бросок</label>
+    </div>
+</template>
+
+<div id="discipline-data" data-discipline="{{ entry.discipline }}" style="display:none;"></div>
+
+<script>
+    window.participantsData = {{ participants|safe }};
+</script>
+
+<form style="display: none;">
+    {% csrf_token %}
+</form>
+
+<script src="{% static 'js/enter_results.js' %}"></script>
+{% endblock %}

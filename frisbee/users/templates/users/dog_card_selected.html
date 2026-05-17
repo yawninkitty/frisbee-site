@@ -1,0 +1,10 @@
+<div class="dog-card">
+    {% if dog.avatar %}
+        <img src="{{ dog.avatar.url }}" alt="{{ dog.name }}" class="dog-avatar">
+    {% else %}
+        <div class="dog-avatar-placeholder">🐕</div>
+    {% endif %}
+    <h3>{{ dog.name }}</h3>
+    <p>Порода: {{ dog.breed|default:"—" }}</p>
+    <p>Класс: {{ dog.get_sport_class_display }}</p>
+</div>

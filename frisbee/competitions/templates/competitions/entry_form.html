@@ -1,0 +1,50 @@
+<div class="entry-form-card {% if entry_id %}existing-entry{% endif %}"
+     {% if entry_id %}data-entry-id="{{ entry_id }}"{% endif %}
+     data-discipline="{{ discipline }}">
+    <div class="entry-form-header">
+        <span class="entry-form-title">
+            {% if entry_id %}Редактировать зачёт: {{ discipline_name }}{% else %}Добавить зачёт: {{ discipline_name }}{% endif %}
+        </span>
+        <button type="button" class="remove-entry-form" {% if entry_id %}data-entry-id="{{ entry_id }}"{% endif %}>✕</button>
+    </div>
+    <div class="entry-form-fields">
+        <div class="form-group">
+            <label>Класс *</label>
+            <div class="radio-group">
+                <label class="radio-label">
+                    <input type="radio" name="sport_class_{{ form_id }}" value="novice" {% if sport_class == 'novice' %}checked{% endif %}> Новички
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="sport_class_{{ form_id }}" value="progress" {% if sport_class == 'progress' %}checked{% endif %}> Прогресс
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="sport_class_{{ form_id }}" value="open" {% if sport_class == 'open' %}checked{% endif %}> Открытый
+                </label>
+            </div>
+        </div>
+        <div class="form-group-row">
+            <div class="form-group half">
+                <label>Судья</label>
+                <select class="judge-select">
+                    <option value="">-- Выберите судью из списка --</option>
+                    <optgroup label="Вы">
+                        <option value="{{ user_id }}" {% if judge_id == user_id %}selected{% endif %}>Вы</option>
+                    </optgroup>
+                    <optgroup label="Другие организаторы">
+                        {% for org in organizers %}
+                            <option value="{{ org.id }}" {% if judge_id == org.id %}selected{% endif %}>{{ org.get_full_name|default:org.username }}</option>
+                        {% endfor %}
+                    </optgroup>
+                </select>
+            </div>
+            <div class="form-group half">
+                <label>Или укажите вручную</label>
+                <input type="text" class="judge-text" value="{{ judge_name }}" placeholder="ФИО судьи">
+            </div>
+            <div class="form-group half">
+                <label>Взнос (₽)</label>
+                <input type="number" class="entry-fee" value="{{ fee }}" step="100">
+            </div>
+        </div>
+    </div>
+</div>

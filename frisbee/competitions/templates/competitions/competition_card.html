@@ -1,0 +1,61 @@
+<div class="competition-card">
+    <div class="content">
+        <p class="body-text-sm color-purple-main">
+            {{ comp.date|date:"j E" }} •
+
+            {% if comp.is_finished %}
+                <span>Завершено</span>
+            {% elif comp.is_ongoing %}
+                <span>Соревнование идёт</span>
+            {% else %}
+                {% if comp.is_registration_open %}
+                    <span>Запись до {{ comp.registration_deadline|date:"j E" }}</span>
+                {% else %}
+                    <span>Запись закрыта</span>
+                {% endif %}
+            {% endif %}
+
+            • {{ comp.city }}
+        </p>
+        <div>
+            <a class="header-sm padding-xs-bottom" href="{% url 'competitions:competition_detail' comp.id %}">{{ comp.title }}</a>
+            <div class="card-tags">
+                {% for discipline in comp.get_unique_disciplines_display %}
+                <span class="tag bg-color-gray-border ">{{ discipline }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        <p class="body-text-md-relaxed desc">{{ comp.location }}</p>
+    </div>
+    <div class="card-actions">
+        {% if comp.is_finished %}
+            {# Соревнование завершено — только результаты и подробнее #}
+            <a href="{% url 'competitions:competition_results' comp.id %}" class="btn btn-primary btn-s">Результаты</a>
+            <a href="{% url 'competitions:competition_detail' comp.id %}" class="btn btn-secondary btn-s">Подробнее</a>
+
+        {% elif comp.is_ongoing %}
+            {# Соревнование сегодня #}
+            {% if comp.is_registration_open %}
+                {# Сегодня + регистрация открыта — результаты и записаться #}
+                <a href="{% url 'competitions:competition_results' comp.id %}" class="btn btn-primary btn-s">Результаты</a>
+                <a href="{% url 'competitions:register_for_competition' comp.id %}" class="btn btn-secondary btn-s">Записаться</a>
+            {% else %}
+                {# Сегодня + регистрация закрыта — только результаты и подробнее #}
+                <a href="{% url 'competitions:competition_results' comp.id %}" class="btn btn-primary btn-s">Результаты</a>
+                <a href="{% url 'competitions:competition_detail' comp.id %}" class="btn btn-secondary btn-s">Подробнее</a>
+            {% endif %}
+
+        {% else %}
+            {# Будущее соревнование #}
+            {% if comp.is_registration_open %}
+                {# Регистрация открыта — записаться и подробнее #}
+                <a href="{% url 'competitions:register_for_competition' comp.id %}" class="btn btn-primary btn-s">Записаться</a>
+                <a href="{% url 'competitions:competition_detail' comp.id %}" class="btn btn-secondary btn-s">Подробнее</a>
+            {% else %}
+                {# Регистрация закрыта — только подробнее #}
+                <a href="{% url 'competitions:competition_detail' comp.id %}" class="btn btn-primary btn-s">Подробнее</a>
+                <a href="{% url 'competitions:competition_results' comp.id %}" class="btn btn-secondary btn-s">Результаты</a>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>

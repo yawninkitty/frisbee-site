@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Редактировать соревнование{% endblock %}
+
+{% block content %}
+<section class="create-competition">
+    <div class="container">
+        <div class="form-header">
+            <h1 class="header-md">Редактировать соревнование</h1>
+        </div>
+
+        <div class="form-tabs slider">
+            <button class="form-tab slider-btn active" data-tab="main">Основные данные</button>
+            <button class="form-tab slider-btn" data-tab="entries">Зачёты</button>
+        </div>
+
+        <form method="post" id="competition-form" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="competition_id" value="{{ competition.id }}">
+
+            <!-- Вкладка: Основные данные -->
+            <div id="tab-main" class="tab-content active">
+                <div class="form-section">
+                    <div class="form-row three-columns">
+                        <!-- Колонка 1 -->
+                        <div class="form-col">
+                            <h3 class="header-sm">Основная информация</h3>
+                            <div class="floating-label-group">
+                                <input type="text" name="title" id="competition-title" class="input" value="{{ competition.title }}" placeholder=" " required>
+                                <label>Название *</label>
+                            </div>
+                            <div class="floating-label-group">
+                                <input type="date" name="date" id="competition-date" class="input" value="{{ competition.date|date:'Y-m-d' }}" placeholder=" " required>
+                                <label>Дата проведения *</label>
+                            </div>
+                            <div class="floating-label-group">
+                                <input type="date" name="registration_deadline" id="registration-deadline" class="input" value="{{ competition.registration_deadline|date:'Y-m-d' }}" placeholder=" " required>
+                                <label>Дата окончания сбора заявок *</label>
+                            </div>
+                            <div class="floating-label-group">
+                                <textarea name="description" id="competition-description" class="input" rows="4" placeholder=" ">{{ competition.description }}</textarea>
+                                <label>Описание</label>
+                            </div>
+                        </div>
+
+                        <!-- Колонка 2 -->
+                        <div class="form-col">
+                            <h3 class="header-sm">Адрес и площадка</h3>
+                            <div class="radio-group">
+                                <div class="radio-group-label">Тип площадки *</div>
+                                <div class="radio-options-row">
+                                    <label class="radio-option">
+                                        <input type="radio" name="location_type" value="outdoor" {% if competition.location_type == 'outdoor' %}checked{% endif %} required>
+                                        <span>Уличная</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="location_type" value="indoor" {% if competition.location_type == 'indoor' %}checked{% endif %} required>
+                                        <span>Крытая</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="floating-label-group">
+                                <input type="text" name="city" id="competition-city" class="input capitalize-input" value="{{ competition.city|default:'' }}" placeholder=" " required>
+                                <label>Город *</label>
+                            </div>
+                            <div class="floating-label-group">
+                                <input type="text" name="location" id="competition-location" class="input" value="{{ competition.location }}" placeholder=" " required>
+                                <label>Улица и номер дома *</label>
+                            </div>
+                        </div>
+
+                        <!-- Колонка 3 -->
+                        <div class="form-col">
+                            <h3 class="header-sm">Оплата</h3>
+                            <div class="radio-group">
+                                <div class="radio-group-label">Способы оплаты</div>
+                                <div class="radio-options-row payment-methods-group">
+                                    {% for method in payment_methods %}
+                                    <label class="radio-option">
+                                        <input type="checkbox" name="payment_methods" value="{{ method.id }}" class="payment-method-checkbox" {% if method.id in selected_payment_methods %}checked{% endif %}>
+                                        <span>{{ method.name }}</span>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="floating-label-group">
+                                <input type="date" name="payment_deadline" id="payment-deadline" class="input" value="{{ competition.payment_deadline|date:'Y-m-d' }}" placeholder=" ">
+                                <label>Срок оплаты</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Блок 2: Прикреплённые файлы -->
+                <div class="form-section">
+                    <h3 class="header-sm">Прикреплённые файлы</h3>
+                    <div id="files-list" class="files-list">
+                        {% for file in files %}
+                            <div class="file-card existing-file" data-file-id="{{ file.id }}">
+                                <span class="file-icon"><img src="{% static 'images/file.svg' %}"></span>
+                                <span class="file-name body-text-sm">{{ file.title }}</span>
+                                <button type="button" class="remove-existing-file modal-close"><img src="{% static 'images/cross.svg' %}"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="file-upload-area">
+                        <div class="file-upload-hint">
+                            <button type="button" id="add-file-btn" class="btn btn-secondary btn-l">Добавить файл +</button>
+                            <small class="form-hint body-text-sm-relaxed color-gray-middle">Максимальный размер файла: 10 МБ.<br>Поддерживаются: PDF, DOC, XLS, JPG, PNG</small>
+                        </div>
+                        <input type="file" id="file-input" style="display:none;" multiple>
+                        <div id="upload-progress" class="upload-progress" style="display:none;"></div>
+                    </div>
+                </div>
+
+                <!-- Блок 3: Контакты для связи -->
+                <div class="form-section">
+                    <h3 class="header-sm">Контакты для связи</h3>
+                    <div id="contacts-list" class="contacts-list">
+                        {% for contact in contacts %}
+                            <div class="contact-card existing-contact">
+                                <div class="floating-label-group">
+                                    <select class="contact-type input">
+                                        <option value="" disabled selected></option>
+                                        <option value="email" {% if contact.contact_type == 'email' %}selected{% endif %}>Email</option>
+                                        <option value="phone" {% if contact.contact_type == 'phone' %}selected{% endif %}>Телефон</option>
+                                        <option value="vk" {% if contact.contact_type == 'vk' %}selected{% endif %}>ВКонтакте</option>
+                                        <option value="telegram" {% if contact.contact_type == 'telegram' %}selected{% endif %}>Telegram</option>
+                                    </select>
+                                    <label>Тип контакта</label>
+                                </div>
+                                <div class="floating-label-group">
+                                    <input type="text" class="contact-value input" value="{{ contact.value }}" placeholder=" ">
+                                    <label>Адрес почты, ссылка или номер</label>
+                                </div>
+                                <button type="button" class="remove-contact modal-close"><img src="{% static 'images/cross.svg' %}"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="contact-actions">
+                        <button type="button" id="add-contact-btn" class="btn btn-secondary btn-l">Добавить контакт +</button>
+                        <small class="form-hint body-text-sm-relaxed color-gray-middle">Участники смогут связаться с вами<br>по этим контактам</small>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="next-to-entries" class="btn btn-primary btn-l">Дальше →</button>
+                    <button type="button" class="btn btn-secondary btn-l">Сохранить черновик</button>
+                </div>
+            </div>
+
+            <!-- Вкладка: Зачёты -->
+            <div id="tab-entries" class="tab-content">
+                <div id="entries-container">
+                    <!-- Буллсай -->
+                    <div class="discipline-section" data-discipline="bullseye">
+                        <div class="discipline-header">
+                            <h3 class="header-sm">Буллсай</h3>
+                            <button type="button" class="add-entry-btn btn btn-secondary btn-s" data-discipline="bullseye">Добавить зачёт +</button>
+                        </div>
+                        <div class="entry-forms-container" id="entry-forms-bullseye"></div>
+                    </div>
+
+                    <!-- Броски на дальность -->
+                    <div class="discipline-section" data-discipline="distance">
+                        <div class="discipline-header">
+                            <h3 class="header-sm">Броски на дальность</h3>
+                            <button type="button" class="add-entry-btn btn btn-secondary btn-s" data-discipline="distance">Добавить зачёт +</button>
+                        </div>
+                        <div class="entry-forms-container" id="entry-forms-distance"></div>
+                    </div>
+
+                    <!-- Броски на точность -->
+                    <div class="discipline-section" data-discipline="accuracy">
+                        <div class="discipline-header">
+                            <h3 class="header-sm">Броски на точность</h3>
+                            <button type="button" class="add-entry-btn btn btn-secondary btn-s" data-discipline="accuracy">Добавить зачёт +</button>
+                        </div>
+                        <div class="entry-forms-container" id="entry-forms-accuracy"></div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="back-to-main" class="btn btn-secondary btn-l">← Назад</button>
+                    <button type="submit" id="save-btn" class="btn btn-primary btn-l">Сохранить изменения</button>
+                    <button type="button" class="btn btn-secondary btn-l">Сохранить черновик</button>
+                    <button type="button" id="delete-competition-btn" class="btn btn-danger btn-l">Удалить соревнование</button>
+                </div>
+            </div>
+
+            <!-- Шаблон формы зачёта (ТОЧНО КАК В CREATE) -->
+            <template id="entry-form-template">
+                <div class="entry-form-card">
+                    <div class="entry-form-header">
+                        <button type="button" class="remove-entry-form modal-close"><img src="{% static 'images/cross.svg' %}"></button>
+                    </div>
+                    <div class="entry-form-fields">
+                        <div class="radio-group">
+                            <div class="radio-group-label">Класс *</div>
+                            <div class="radio-options-row">
+                                <label class="radio-option">
+                                    <input type="radio" name="sport_class" value="novice">
+                                    <span>Новички</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="sport_class" value="progress">
+                                    <span>Прогресс</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="sport_class" value="open">
+                                    <span>Открытый</span>
+                                </label>
+                                <label class="radio-option" title="При выборе этого пункта вы дадите возможность участникам не занимать места в общем зачёте.&#10;Они будут в конце таблицы с результатами зачёта.">
+                                    <input type="checkbox" name="can_enter_without_class" value="true" class="can-enter-without-class-checkbox">
+                                    <span>Вне зачёта</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-row two-columns">
+                            <div class="floating-label-group custom-select-wrapper">
+                                <div class="custom-select-field" data-placeholder=" ">
+                                    <div class="custom-select-trigger">
+                                        <span class="custom-select-value"></span>
+                                    </div>
+                                    <div class="custom-select-dropdown">
+                                        <div class="custom-select-group">
+                                            <div class="custom-select-group-label">Вы</div>
+                                            <div class="custom-select-option" data-value="{{ user.id }}">
+                                                {{ user.get_full_name|default:user.username }}
+                                            </div>
+                                        </div>
+                                        <div class="custom-select-group">
+                                            <div class="custom-select-group-label">Другие организаторы</div>
+                                            {% for org in organizers %}
+                                            <div class="custom-select-option" data-value="{{ org.id }}">
+                                                {{ org.get_full_name|default:org.username }}
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <input type="hidden" class="custom-select-input" name="judge_id">
+                                </div>
+                                <label>Судья</label>
+                            </div>
+                            <div class="floating-label-group">
+                                <input type="text" class="judge-text input" placeholder=" ">
+                                <label>Или укажите вручную (если нет на сайте)</label>
+                            </div>
+                            <div class="floating-label-group">
+                                <input type="number" class="entry-fee input" value="0" step="100" placeholder=" ">
+                                <label>Взнос (₽)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Шаблон для карточки файла -->
+            <template id="file-card-template">
+                <div class="file-card" data-file-path="">
+                    <span class="file-icon"><img src="{% static 'images/file.svg' %}"></span>
+                    <span class="file-name body-text-sm"></span>
+                    <span class="file-size body-text-sm color-gray-middle"></span>
+                    <div class="file-progress" style="display:none;">
+                        <div class="progress-bar"></div>
+                    </div>
+                    <button type="button" class="remove-file modal-close"><img src="{% static 'images/cross.svg' %}"></button>
+                </div>
+            </template>
+
+            <!-- Шаблон для карточки контакта -->
+            <template id="contact-card-template">
+                <div class="contact-card">
+                    <div class="floating-label-group">
+                        <select class="contact-type input">
+                            <option value="" disabled selected></option>
+                            <option value="email">Email</option>
+                            <option value="phone">Телефон</option>
+                            <option value="vk">ВКонтакте</option>
+                            <option value="telegram">Telegram</option>
+                        </select>
+                        <label>Тип контакта</label>
+                    </div>
+                    <div class="floating-label-group">
+                        <input type="text" class="contact-value input" placeholder=" ">
+                        <label>Адрес почты, ссылка или номер</label>
+                    </div>
+                    <button type="button" class="remove-contact modal-close"><img src="{% static 'images/cross.svg' %}"></button>
+                </div>
+            </template>
+        </form>
+    </div>
+</section>
+
+<script>
+    // Передаём данные о существующих зачётах
+    const existingEntries = {{ entries_data|safe }};
+    const isEdit = true;
+</script>
+
+<script src="{% static 'js/edit_competition.js' %}?v=12"></script>
+{% endblock %}

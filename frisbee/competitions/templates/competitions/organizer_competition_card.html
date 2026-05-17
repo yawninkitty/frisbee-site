@@ -1,0 +1,71 @@
+{% load static %}
+
+<div class="organizer-competition-card" data-date="{{ competition.date|date:'Y-m-d' }}">
+    <div class="two-columns">
+        <div class="left-column">
+            <div class="competition-card-header">
+                <div class="status-row">
+                    <span class="tag status-tag status-{{ competition.status }}">
+                        {% if competition.status == 'draft' %}Черновик
+                        {% elif competition.status == 'published' %}Опубликовано
+                        {% else %}{{ competition.status }}
+                        {% endif %}
+                    </span>
+                </div>
+                <div>
+                    <a href="{% url 'competitions:competition_detail' competition.id %}" class="link-black">
+                        <h3 class="header-sm">{{ competition.title }}</h3>
+                    </a>
+                    <div class="tags-group">
+                        <span class="tag bg-color-gray-border">{{ competition.date|date:"j E Y" }}</span>
+                        <span class="tag bg-color-gray-border">{{ competition.city|default:"Город не указан" }}</span>
+                    </div>
+                    {% if competition.payment_deadline %}
+                        <span class="tag bg-color-gray-border">Оплата до {{ competition.payment_deadline|date:"j E Y" }}</span>
+                    {% endif %}
+                </div>
+                <p class="body-text-md-relaxed">{{ competition.location }}</p>
+            </div>
+            <div class="stat-item">
+                <span class="body-text-md color-purple-main">
+                    {% if competition.is_registration_open %}
+                        Запись открыта до {{ competition.registration_deadline|date:"j E" }}
+                    {% elif competition.date > now %}
+                        Запись закрыта
+                    {% elif competition.date == now %}
+                        Соревнование идёт
+                    {% else %}
+                        Завершено
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="header-2sm">Всего заявок:</span>
+                    <span class="body-text-md">{{ competition.total_applications|default:0 }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="header-2sm">Оплачено:</span>
+                    <span class="body-text-md">{{ competition.paid_applications|default:0 }}</span>
+                </div>
+            </div>
+
+            <div class="right-column-bottom">
+                <div class="competition-card-actions">
+                    {% if user_role == 'organizer' %}
+                        <a href="{% url 'competitions:edit_competition' competition.id %}" class="btn btn-secondary btn-s">Редактировать</a>
+                        {% if competition.status == 'draft' %}
+                            <button class="btn btn-primary btn-s publish-draft-btn" data-competition-id="{{ competition.id }}">Опубликовать</button>
+                        {% endif %}
+                    {% endif %}
+                    {% if competition.status == 'published' %}
+                        <a href="{% url 'competitions:manage_competition' competition.id %}" class="btn btn-primary btn-s">Управлять</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

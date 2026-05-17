@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Журнал{% endblock %}
+
+{% block content %}
+<section class="search-users">
+    <div class="search-filters-panel container">
+        <div class="search-header">
+            <h1 class="header-lg">Журнал</h1>
+            <div class="search-and-filters">
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="Поиск по названию..." class="input search-input">
+                </div>
+                <div class="filter-container">
+                    <div class="chips-container" id="tag-chips">
+                        <button class="chip active" data-tag="">Все</button>
+                        <button class="chip" data-tag="guide">Гайд</button>
+                        <button class="chip" data-tag="athletes">Спортсменам</button>
+                        <button class="chip" data-tag="organizers">Организаторам</button>
+                        <button class="chip" data-tag="rules">Правила</button>
+                        <button class="chip" data-tag="training">Тренировки</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="articles-container" class="journal-grid">
+            {% for article in page_obj %}
+                {% include 'journal/article_card.html' with article=article %}
+            {% endfor %}
+        </div>
+
+        <!-- Пустая выдача -->
+        <div id="articles-empty" class="articles-empty" style="display: none;">
+            <img src="{% static 'images/dog_fell.svg' %}" alt="Статей нет">
+            <p class="body-text-lg color-gray-middle">Статей не найдено</p>
+        </div>
+
+        <div id="loader" class="loader" style="display: none;">Загрузка...</div>
+    </div>
+</section>
+
+<script src="{% static 'js/journal.js' %}?v=1"></script>
+{% endblock %}

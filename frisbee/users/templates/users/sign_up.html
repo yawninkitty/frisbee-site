@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+<div class="sign-up">
+    <div class="auth-container container">
+        <div class="auth-header">
+            <a href="{% url 'login' %}" class="back-link body-text-lg">← Войти</a>
+            <h1 class="header-md">Регистрация</h1>
+        </div>
+        <div class="auth-card">
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
+
+                <div class="floating-label-group">
+                    <input type="text" name="username" id="id_username" class="input" value="{{ form.username.value|default:'' }}" placeholder=" " required>
+                    <label>Логин *</label>
+                    {% if form.username.errors %}
+                        <div class="auth-error-message">{{ form.username.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="floating-label-group">
+                    <input type="email" name="email" id="id_email" class="input" value="{{ form.email.value|default:'' }}" placeholder=" " required>
+                    <label>Электронная почта *</label>
+                    {% if form.email.errors %}
+                        <div class="auth-error-message">{{ form.email.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="floating-label-group">
+                    <input type="text" name="first_name" id="id_first_name" class="input" value="{{ form.first_name.value|default:'' }}" placeholder=" " required>
+                    <label>Имя *</label>
+                    {% if form.first_name.errors %}
+                        <div class="auth-error-message">{{ form.first_name.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="floating-label-group">
+                    <input type="text" name="last_name" id="id_last_name" class="input" value="{{ form.last_name.value|default:'' }}" placeholder=" " required>
+                    <label>Фамилия *</label>
+                    {% if form.last_name.errors %}
+                        <div class="auth-error-message">{{ form.last_name.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Пол - радио-кнопки -->
+                <div class="radio-group">
+                    <div class="radio-group-label">Пол *</div>
+                    <div class="radio-options-row">
+                        {% for radio in form.gender %}
+                        <label class="radio-option">
+                            {{ radio.tag }}
+                            <span>{{ radio.choice_label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% if form.gender.errors %}
+                        <div class="auth-error-message">{{ form.gender.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Класс - радио-кнопки с тултипом -->
+                <div class="radio-group">
+                    <div class="radio-group-label">
+                        Класс *
+                        <span class="tooltip-icon" data-tooltip="class">ⓘ</span>
+                    </div>
+                    <div class="radio-options-row">
+                        {% for radio in form.sport_class %}
+                        <label class="radio-option">
+                            {{ radio.tag }}
+                            <span>{{ radio.choice_label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <div class="tooltip-content body-text-md-relaxed" id="tooltip-class" style="display: none;">
+                        Если вы впервые пробуете дог-фризби, то оставьте класс Новички.
+                        <a href="#" class="tooltip-link">Подробнее о классах</a>
+                    </div>
+                    {% if form.sport_class.errors %}
+                        <div class="auth-error-message">{{ form.sport_class.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Роль - радио-кнопки с тултипом -->
+                <div class="radio-group">
+                    <div class="radio-group-label">
+                        Роль *
+                        <span class="tooltip-icon" data-tooltip="role">ⓘ</span>
+                    </div>
+                    <div class="radio-options-row">
+                        {% for radio in form.role %}
+                        <label class="radio-option">
+                            {{ radio.tag }}
+                            <span>{{ radio.choice_label }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <div class="tooltip-content body-text-md-relaxed" id="tooltip-role" style="display: none;">
+                        Спортсмены и Организаторы могут регистрироваться на соревнования по умолчанию.
+                        Если вы хотите создавать свои соревнования, вы можете выбрать роль Организатора.
+                    </div>
+                    <div id="organizer-info body-text-md-relaxed" class="sign-up-info-box" style="display: none;">
+                        Для получения функционала Организатора ваш аккаунт пройдёт модерацию.
+                        По её окончании вам придёт уведомление. До тех пор ваш аккаунт будет иметь только функционал спортсмена.
+                    </div>
+                    {% if form.role.errors %}
+                        <div class="auth-error-message">{{ form.role.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="floating-label-group">
+                    <input type="password" name="password1" id="id_password1" class="input" placeholder=" " required>
+                    <label>Пароль *</label>
+                    {% if form.password1.errors %}
+                        <div class="auth-error-message">{{ form.password1.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="floating-label-group">
+                    <input type="password" name="password2" id="id_password2" class="input" placeholder=" " required>
+                    <label>Пароль ещё раз *</label>
+                    {% if form.password2.errors %}
+                        <div class="auth-error-message">{{ form.password2.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Чекбокс согласия -->
+                <div class="checkbox-wrapper">
+                    <label class="checkbox-custom">
+                        {{ form.agree_to_terms }}
+                        <span class="checkbox-text">Я прочитал <a href="#" class="link-purple-main">политику обработки персональных данных</a> и согласен с её условиями *</span>
+                    </label>
+                    {% if form.agree_to_terms.errors %}
+                        <div class="auth-error-message">{{ form.agree_to_terms.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="captcha-group">
+                    {{ form.captcha }}
+                    {% if form.captcha.errors %}
+                        <div class="auth-error-message">{{ form.captcha.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-l">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // Tooltip для иконок
+    let tooltipTimeout;
+
+    document.querySelectorAll('.tooltip-icon').forEach(icon => {
+        const tooltipId = icon.dataset.tooltip;
+        const tooltip = document.getElementById(`tooltip-${tooltipId}`);
+
+        if (!tooltip) return;
+
+        // Функция показа тултипа
+        function showTooltip() {
+            clearTimeout(tooltipTimeout);
+            const rect = icon.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            tooltip.style.display = 'block';
+            tooltip.style.position = 'absolute';
+            tooltip.style.top = `${rect.bottom + scrollTop + 5}px`;
+            tooltip.style.left = `${rect.left}px`;
+            tooltip.style.zIndex = '1000';
+        }
+
+        // Функция скрытия тултипа
+        function hideTooltip() {
+            tooltipTimeout = setTimeout(() => {
+                tooltip.style.display = 'none';
+            }, 300);
+        }
+
+        // События для иконки
+        icon.addEventListener('mouseenter', showTooltip);
+        icon.addEventListener('mouseleave', hideTooltip);
+
+        // События для самого тултипа
+        tooltip.addEventListener('mouseenter', () => {
+            clearTimeout(tooltipTimeout);
+            tooltip.style.display = 'block';
+        });
+
+        tooltip.addEventListener('mouseleave', () => {
+            tooltip.style.display = 'none';
+        });
+    });
+
+    // Показываем/скрываем информацию об организаторе
+    const roleRadios = document.querySelectorAll('input[name="role"]');
+    const organizerInfo = document.getElementById('organizer-info');
+
+    roleRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'organizer') {
+                organizerInfo.style.display = 'block';
+            } else {
+                organizerInfo.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

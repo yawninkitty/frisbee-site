@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Вход{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<div class="auth-container container">
+    <div class="auth-card">
+        <h1 class="header-md">Вход</h1>
+
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.GET.next }}">
+
+            <div class="floating-label-group">
+                <input type="text" name="username" id="id_username" class="input" placeholder=" " required>
+                <label>Логин</label>
+            </div>
+
+            <div class="floating-label-group">
+                <input type="password" name="password" id="id_password" class="input" placeholder=" " required>
+                <label>Пароль</label>
+            </div>
+
+            {% if form.errors %}
+            <div class="auth-error">
+                <p class="body-text-sm">Неверное имя пользователя или пароль.</p>
+            </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary btn-l">Войти</button>
+        </form>
+
+        <p class="auth-footer body-text-md color-gray-middle">
+            Нет аккаунта? <a href="{% url 'sign_up' %}?next={{ request.GET.next }}" class="link-purple-main">Зарегистрироваться</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

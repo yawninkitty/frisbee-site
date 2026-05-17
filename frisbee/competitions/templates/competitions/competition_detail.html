@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ competition.title }}{% endblock %}
+
+{% load static %}
+
+{% block content %}
+{% include 'includes/breadcrumbs.html' %}
+    <section class="main-info">
+        <div class="container">
+            <div class="info-header">
+                <h1 class="header-md">{{ competition.title }}</h1>
+                <div class="tags-groups-info">
+                    <div class="tag-group-info">
+                        <div class="tag bg-color-salad-main">{{ competition.date }}</div>
+                        {% if competition.time %}
+                            <div class="tag bg-color-salad-main">{{ competition.time|time:"H:i" }}</div>
+                        {% endif %}
+                        <div class="tag bg-color-salad-main">{{ competition.city }}</div>
+                    </div>
+                    <div class="tag-group-info">
+                        {% for method in competition.payment_methods.all %}
+                            <div class="tag bg-color-gray-light">{{ method.name }}</div>
+                        {% empty %}
+                            <div class="tag bg-color-gray-light">Способ оплаты не указан</div>
+                        {% endfor %}
+                        {% if competition.payment_deadline %}
+                            <div class="tag bg-color-gray-light">Оплата до {{ competition.payment_deadline|date:"j E" }}</div>
+                        {% else %}
+                            <div class="tag bg-color-gray-light">Срок оплаты не указан</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="location-info">
+                <p class="body-text-lg-relaxed">{{ competition.location }} • {{ competition.get_location_type_display }}</p>
+            </div>
+            <div class="info-actions">
+                {% if competition.status == 'draft' %}
+                    <!-- Черновик -->
+                    <a class="btn btn-l btn-primary" href="{% url 'competitions:edit_competition' competition.id %}">Редактировать</a>
+                    <p class="color-gray-middle">Это черновик, он виден только вам</p>
+
+                {% elif competition.is_finished %}
+                    <a class="btn btn-l btn-primary" href="{% url 'competitions:competition_results' competition.id %}">Протоколы и результаты</a>
+                    <p class="color-gray-middle">Соревнование завершено</p>
+
+                {% elif competition.is_ongoing %}
+                    {% if competition.is_registration_open %}
+                        <a class="btn btn-l btn-primary" href="{% url 'competitions:competition_results' competition.id %}">Протоколы и результаты</a>
+                        <a class="btn btn-l btn-secondary" href="{% url 'competitions:register_for_competition' competition.id %}?next={{ request.path }}">Записаться на соревнование</a>
+                        <p class="color-purple-main">Соревнование идёт</p>
+                    {% else %}
+                        <a class="btn btn-l btn-primary" href="{% url 'competitions:competition_results' competition.id %}">Протоколы и результаты</a>
+                        <p class="color-purple-main">Соревнование идёт</p>
+                    {% endif %}
+
+                {% else %}
+                    {% if competition.is_registration_open %}
+                        <a class="btn btn-l btn-primary" href="{% url 'competitions:register_for_competition' competition.id %}?next={{ request.path }}">Записаться на соревнование</a>
+                        <p class="color-purple-main">Запись до {{ competition.registration_deadline|date:"j E" }}</p>
+                    {% else %}
+                        <p class="color-gray-middle">Запись закрыта</p>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <section class="entries-and-orgs-info">
+        <div class="container">
+            <div id="entries-info">
+                <h2 class="header-md">Зачёты</h2>
+                {% if competition.entries.all %}
+                    {% regroup competition.entries.all by discipline as discipline_groups %}
+                    {% for discipline_group in discipline_groups %}
+                        <div class="entries-cards-group">
+                            <h3 class="header-sm">{{ discipline_group.list.0.get_discipline_display }}</h3>
+                            <div class="entries-cards-list">
+                                {% regroup discipline_group.list by get_sport_class_display as class_groups %}
+                                {% for class_group in class_groups %}
+                                <div class="entry-card-info">
+                                    {% with entry=class_group.list.0 %}
+                                        {% if entry.can_enter_without_class %}
+                                            <div class="info-box">
+                                                <p class="entry-card-desc-text">Можно вне зачёта</p>
+                                                <p class="entry-card-value">{{ class_group.grouper }}</p>
+                                            </div>
+                                        {% else %}
+                                            <div class="info-box">
+                                                <p class="entry-card-value">{{ class_group.grouper }}</p>
+                                            </div>
+                                        {% endif %}
+
+                                        <div class="info-box">
+                                            <p class="entry-card-desc-text">Судья</p>
+                                            <p class="entry-card-value">
+                                                {% if entry.assigned_judges.first %}
+                                                    {{ entry.assigned_judges.first.user.get_full_name|default:entry.assigned_judges.first.user.username }}
+                                                {% elif entry.judge_name %}
+                                                    {{ entry.judge_name }}
+                                                {% else %}
+                                                    Не указан
+                                                {% endif %}
+                                            </p>
+                                        </div>
+
+                                        <div class="info-box">
+                                            <p class="entry-card-desc-text">Стоимость</p>
+                                            <p class="entry-card-value">{{ entry.fee|floatformat:0 }} ₽</p>
+                                        </div>
+                                    {% endwith %}
+                                </div>
+                            {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="color-gray-middle">Зачёты ещё не добавлены</p>
+                {% endif %}
+            </div>
+
+            <div id="orgs-info">
+                <h2 class="header-md">Организатор</h2>
+                <div class="org-box">
+                    <a class="header-sm link-black" href="{% url 'users:user_profile' competition.organizer.id %}">
+                        {{ competition.organizer.get_full_name|default:competition.organizer.username }}
+                    </a>
+                    <div class="contacts-list">
+                        {% for contact in competition.contacts.all %}
+                            <div class="list-item">
+                                <img src="{% static contact.get_icon_path %}" alt="{{ contact.get_contact_type_display }}" class="contact-icon">
+                                <a class="link-purple-main" href="{{ contact.get_link_value }}"
+                                   {% if contact.contact_type == 'vk' or contact.contact_type == 'telegram' %}target="_blank" rel="noopener noreferrer"{% endif %}>
+                                    {{ contact.get_display_name }}
+                                </a>
+                            </div>
+                        {% empty %}
+                            <p class="color-gray-middle">Контакты не указаны</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% if competition.files.all %}
+                    <h3 class="header-md">Документы</h3>
+                    {% for file in competition.files.all %}
+                        <div class="list-item">
+                            <img src="{% static 'images/file_gray.svg' %}" alt="Файл">
+                            <a class="link-purple-main" href="{{ file.file.url }}" target="_blank">{{ file.title }}</a>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    {% if competition.description %}
+        <section class="description-info">
+            <div class="container">
+                <h2 class="header-md">Дополнительная информация</h2>
+                <p>{{ competition.description|linebreaks }}</p>
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- Карусели — только для опубликованных -->
+    {% if competition.status == 'published' %}
+        <section class="carousel-line">
+            <div class="container padding-lg">
+                <div class="content">
+                    <div class="carousel-container">
+                        <div class="carousel-header">
+                            <h2 class="header-md">Другие соревнования</h2>
+                            <div class="carousel-actions">
+                                <a class="btn btn-secondary btn-s" href="{% url 'competitions:competition_list' %}">Смотреть все</a>
+                                <button class="carousel-prev btn btn-secondary btn-s">
+                                    <img src="{% static 'images/arrow.svg' %}" alt="Назад">
+                                </button>
+                                <button class="carousel-next btn btn-secondary btn-s">
+                                    <img src="{% static 'images/arrow.svg' %}" alt="Вперед">
+                                </button>
+                            </div>
+                        </div>
+                        <div class="carousel-grid">
+                            {% for comp in upcoming_competitions %}
+                                {% include 'competitions/competition_card.html' with comp=comp %}
+                            {% empty %}
+                                <p>Пока нет соревнований</p>
+                            {% endfor %}
+                        </div>
+                        <div class="carousel-dots"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="carousel-line journal-line">
+            <div class="container padding-lg">
+                <div class="content">
+                    <div class="carousel-container">
+                        <div class="carousel-header">
+                            <h2 class="header-md">Статьи журнала</h2>
+                            <div class="carousel-actions">
+                                <a class="btn btn-secondary btn-s" href="{% url 'journal:article_list' %}">Смотреть все</a>
+                                <button class="carousel-prev btn btn-secondary btn-s">
+                                    <img src="{% static 'images/arrow.svg' %}" alt="Назад">
+                                </button>
+                                <button class="carousel-next btn btn-secondary btn-s">
+                                    <img src="{% static 'images/arrow.svg' %}" alt="Вперед">
+                                </button>
+                            </div>
+                        </div>
+                        <div class="carousel-grid articles-grid">
+                            {% for article in recent_articles %}
+                                {% include 'journal/article_card.html' with article=article %}
+                            {% empty %}
+                                <p>Пока нет статей</p>
+                            {% endfor %}
+                        </div>
+                        <div class="carousel-dots"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+{% endblock %}

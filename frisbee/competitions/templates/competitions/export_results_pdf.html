@@ -1,0 +1,191 @@
+<!-- competitions/templates/competitions/export_results_pdf.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Результаты {{ competition.title }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+
+        @font-face {
+            font-family: 'sans-serif';
+            src: url("static/fonts/arial.ttf");
+        }
+
+        body {
+            font-family: 'sans-serif';
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 15px;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            margin: 0 0 5px;
+            color: #2c3e50;
+        }
+
+        .header h2 {
+            font-size: 14px;
+            margin: 0;
+            font-weight: normal;
+            color: #666;
+        }
+
+        .competition-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            background: #34495e;
+            color: white;
+            padding: 8px 12px;
+            margin: 0 0 10px;
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 10px;
+        }
+
+        th {
+            background: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        td {
+            border: 1px solid #bdc3c7;
+            padding: 6px 8px;
+            text-align: center;
+        }
+
+        td:first-child, th:first-child {
+            width: 50px;
+        }
+
+        td:nth-child(2), th:nth-child(2),
+        td:nth-child(3), th:nth-child(3) {
+            text-align: left;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 9px;
+            color: #999;
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Результаты соревнования</h1>
+        <h2>{{ competition.title }}</h2>
+    </div>
+
+    <div class="competition-info">
+        <strong>Дата:</strong> {{ competition.date }} &nbsp;|&nbsp;
+        <strong>Место:</strong> {{ competition.location }} &nbsp;|&nbsp;
+        <strong>Дата экспорта:</strong> {{ export_date|date:"d.m.Y H:i" }}
+    </div>
+
+    {% for result in results_data %}
+        <div class="section {% if not forloop.first %}page-break{% endif %}">
+            <div class="section-title">
+                {{ result.discipline }} — {{ result.class }}
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Место</th>
+                        <th>Спортсмен</th>
+                        <th>Собака</th>
+                        <th>Статус</th>
+                        {% if result.discipline_code == 'bullseye' %}
+                            <th>Броски</th>
+                            <th>Сумма</th>
+                            <th>Кол-во</th>
+                        {% elif result.discipline_code == 'distance' %}
+                            <th>Попытка 1</th>
+                            <th>Попытка 2</th>
+                            <th>Попытка 3</th>
+                            <th>Посл. шанс</th>
+                            <th>Лучший</th>
+                        {% elif result.discipline_code == 'accuracy' %}
+                            <th>Броски</th>
+                            <th>Сумма 5</th>
+                            <th>Общая сумма</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for participant in result.participants %}
+                        <tr>
+                            <td>{{ participant.place }}</td>
+                            <td>{{ participant.user_name }}</td>
+                            <td>{{ participant.dog_name }}</td>
+                            <td>{{ participant.status }}</td>
+
+                            {% if result.discipline_code == 'bullseye' %}
+                                <td>{{ participant.data.throws|default:'—'|join:', ' }}</td>
+                                <td>{{ participant.data.total|default:'—' }}</td>
+                                <td>{{ participant.data.throw_count|default:'—' }}</td>
+                            {% elif result.discipline_code == 'distance' %}
+                                <td>{{ participant.data.attempts.0|default:0 }}</td>
+                                <td>{{ participant.data.attempts.1|default:0 }}</td>
+                                <td>{{ participant.data.attempts.2|default:0 }}</td>
+                                <td>{{ participant.data.last_chance|default:0 }}</td>
+                                <td>{{ participant.data.best|default:0 }}</td>
+                            {% elif result.discipline_code == 'accuracy' %}
+                                <td>{{ participant.data.throws|default:'—'|join:', ' }}</td>
+                                <td>{{ participant.data.top_five_sum|default:'—' }}</td>
+                                <td>{{ participant.data.total_sum|default:'—' }}</td>
+                            {% endif %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="10" style="text-align: center;">Нет участников в этом зачёте</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endfor %}
+
+    <div class="footer">
+        Отчёт сгенерирован автоматически на сайте dog-frisbee
+    </div>
+</body>
+</html>

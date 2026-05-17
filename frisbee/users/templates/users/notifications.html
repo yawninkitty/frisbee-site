@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Уведомления{% endblock %}
+
+{% block content %}
+<section class="notifications-section">
+    <div class="container">
+        <div class="notifications-header">
+            <h1 class="header-md">Уведомления</h1>
+        </div>
+
+        <div class="notifications-list">
+            {% if groups.today or groups.yesterday or groups.last_week or groups.last_month or groups.older %}
+
+                {# Сегодня #}
+                {% if groups.today %}
+                    <div class="notification-group">
+                        <h2 class="header-sm">Сегодня</h2>
+                        {% for notif in groups.today %}
+                            {% include 'users/notification_item.html' with notification=notif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {# Вчера #}
+                {% if groups.yesterday %}
+                    <div class="notification-group">
+                        <h2 class="header-sm">Вчера</h2>
+                        {% for notif in groups.yesterday %}
+                            {% include 'users/notification_item.html' with notification=notif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {# Последние 7 дней #}
+                {% if groups.last_week %}
+                    <div class="notification-group">
+                        <h2 class="header-sm">За последние 7 дней</h2>
+                        {% for notif in groups.last_week %}
+                            {% include 'users/notification_item.html' with notification=notif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {# За последний месяц #}
+                {% if groups.last_month %}
+                    <div class="notification-group">
+                        <h2 class="header-sm">За последний месяц</h2>
+                        {% for notif in groups.last_month %}
+                            {% include 'users/notification_item.html' with notification=notif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {# Старше месяца #}
+                {% if groups.older %}
+                    <div class="notification-group">
+                        <h2 class="header-sm">Ранее</h2>
+                        {% for notif in groups.older %}
+                            {% include 'users/notification_item.html' with notification=notif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+            {% else %}
+                <div class="empty-notifications">
+                    <div class="empty-icon">🔔</div>
+                    <p class="header-sm color-gray-middle">Уведомлений пока нет</p>
+                    <p class="body-text-sm color-gray-middle">Когда появятся новые уведомления, они будут отображаться здесь</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<script src="{% static 'js/notifications.js' %}?v=6"></script>
+{% endblock %}

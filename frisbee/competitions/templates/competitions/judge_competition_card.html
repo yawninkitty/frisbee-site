@@ -1,0 +1,62 @@
+{% load static %}
+
+<div class="organizer-competition-card" data-date="{{ competition.date|date:'Y-m-d' }}">
+    <div class="two-columns">
+        <div class="left-column">
+            <div class="competition-card-header">
+                <div class="status-row">
+                    <span class="tag bg-color-salad-main">Судейство</span>
+                </div>
+                <div>
+                    <a href="{% url 'competitions:competition_detail' competition.id %}" class="link-black">
+                        <h3 class="header-sm">{{ competition.title }}</h3>
+                    </a>
+                    <div class="tags-group">
+                        <span class="tag bg-color-gray-border">{{ competition.date|date:"j E Y" }}</span>
+                        <span class="tag bg-color-gray-border">{{ competition.city|default:"Город не указан" }}</span>
+                    </div>
+                </div>
+                <p class="body-text-md-relaxed">{{ competition.location }}</p>
+            </div>
+            <div class="stat-item">
+                <span class="body-text-md color-purple-main">
+                    {% if competition.is_registration_open %}
+                        Запись открыта до {{ competition.registration_deadline|date:"j E" }}
+                    {% elif competition.date > now %}
+                        Запись закрыта
+                    {% elif competition.date == now %}
+                        Соревнование идёт
+                    {% else %}
+                        Завершено
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="header-sm">Зачёты, где я судья:</span>
+                </div>
+                <div class="entries-list">
+                    {% for entry in competition.judging_entries %}
+                        <div class="entry-item">
+                            <div class="entry-header">
+                                <span class="header-2sm">{{ entry.get_discipline_display }}</span>
+                                <span class="header-2sm color-purple-main-click">{{ entry.get_sport_class_display }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="right-column-bottom">
+                <div class="competition-card-actions">
+                    <a href="{% url 'competitions:manage_competition' competition.id %}?tab=results" class="btn btn-secondary btn-s">
+                        Ввести результаты
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

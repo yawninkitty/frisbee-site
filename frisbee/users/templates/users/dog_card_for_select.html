@@ -1,0 +1,47 @@
+<!-- users/templates/users/dog_card_for_select.html -->
+{% load static %}
+
+<div class="dog-card" data-dog-id="{{ dog.id }}">
+    <div class="dog-avatar-container">
+        {% if dog.avatar %}
+            <img src="{{ dog.avatar.url }}" alt="{{ dog.name }}" class="dog-avatar">
+        {% else %}
+            <img src="{% static 'images/dog_avatar_placeholder.svg' %}" alt="{{ dog.name }}" class="dog-avatar">
+        {% endif %}
+
+        {% if dog.owner != user %}
+            <span class="tag bg-color-white owner-tag">
+                <img src="{% static 'images/profile.svg' %}" alt="Владелец">
+                {{ dog.owner.get_full_name|default:dog.owner.username }}
+            </span>
+        {% endif %}
+    </div>
+
+    <div class="dog-card-content">
+        <div class="dog-card-info">
+            <h3 class="header-sm">{{ dog.name }}</h3>
+
+            <p class="body-text-sm color-gray-middle">
+                {{ dog.get_gender_display|default:"Пол не указан" }} ·
+                {{ dog.get_age_display }} ·
+                {% if dog.height %}
+                    {{ dog.height|floatformat:"0" }} см
+                {% else %}
+                    рост неизвестен
+                {% endif %}
+            </p>
+
+            <div class="card-tags">
+                <span class="tag bg-color-salad-main">{{ dog.get_sport_class_display }}</span>
+                <span class="tag bg-color-gray-border">{{ dog.breed|default:"Порода не указана" }}</span>
+            </div>
+        </div>
+
+        {% if show_select_button %}
+            <button class="btn btn-primary btn-s select-dog-btn" data-dog-id="{{ dog.id }}">Выбрать</button>
+        {% endif %}
+        {% if show_select_other_button %}
+            <button class="btn btn-primary btn-s select-other-dog-btn" data-dog-id="{{ dog.id }}">Выбрать</button>
+        {% endif %}
+    </div>
+</div>

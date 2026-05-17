@@ -1,0 +1,36 @@
+{% load static %}
+
+<div class="dog-card" data-user-id="{{ user_data.id }}">
+    <div class="dog-avatar-container">
+        {% if user_data.avatar %}
+            <img src="{{ user_data.avatar }}" alt="{{ user_data.first_name }}" class="dog-avatar">
+        {% else %}
+            {% if user_data.gender == 'male' %}
+                <img src="{% static 'images/man_avatar_placeholder.svg' %}" alt="Аватар" class="dog-avatar">
+            {% else %}
+                <img src="{% static 'images/woman_avatar_placeholder.svg' %}" alt="Аватар" class="dog-avatar">
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <div class="dog-card-content">
+        <div class="dog-card-info">
+            <a href="/users/{{ user_data.id }}/" class="link-black">
+                <h3 class="header-sm">{{ user_data.first_name }} {{ user_data.last_name }}</h3>
+            </a>
+
+            <p class="body-text-sm color-gray-middle">
+                {{ age_text }}
+            </p>
+
+            <div class="card-tags">
+                <span class="tag {% if user_data.is_organizer %}role-organizer{% else %}role-sportsman{% endif %}">
+                    {{ role }}
+                </span>
+                <span class="tag bg-color-salad-main">{{ sport_class }}</span>
+            </div>
+        </div>
+
+        <a href="/users/{{ user_data.id }}/" class="btn btn-secondary btn-s">Подробнее</a>
+    </div>
+</div>
