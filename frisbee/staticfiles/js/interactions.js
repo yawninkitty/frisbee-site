@@ -456,3 +456,35 @@ function closeMobileMenu() {
     menuBtn.classList.remove('active');
     document.body.style.overflow = '';
 }
+
+document.querySelectorAll('.password-toggle').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const targetId = this.dataset.target;
+        const input = document.getElementById(targetId);
+        if (input) {
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            this.querySelector('img').src = isPassword
+                ? '/static/images/eye_off.svg'
+                : '/static/images/eye.svg';
+        }
+    });
+});
+
+document.addEventListener('click', function(e) {
+    // Открытие/закрытие меню
+    const menuBtn = e.target.closest('.cancel-menu-btn');
+    if (menuBtn) {
+        e.stopPropagation();
+        const dropdown = menuBtn.nextElementSibling;
+        const isOpen = dropdown.style.display === 'block';
+        document.querySelectorAll('.cancel-menu-dropdown').forEach(d => d.style.display = 'none');
+        dropdown.style.display = isOpen ? 'none' : 'block';
+        return;
+    }
+
+    // Закрытие всех меню при клике вне
+    if (!e.target.closest('.cancel-menu')) {
+        document.querySelectorAll('.cancel-menu-dropdown').forEach(d => d.style.display = 'none');
+    }
+});

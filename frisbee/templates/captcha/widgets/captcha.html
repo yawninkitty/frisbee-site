@@ -1,6 +1,23 @@
 {% load i18n %}
 <img src="{{ image }}" alt="captcha" class="captcha">
-<div class="floating-label-group">
-    <input type="text" name="{{ widget.name }}" class="input" placeholder=" " required autocomplete="off" id="{{ widget.attrs.id }}">
-    <label>Введите код с картинки *</label>
-</div>
+{% for widget in widget.subwidgets %}
+    {% if forloop.counter == 2 %}
+        {# Это поле для ввода (response) #}
+        <div class="floating-label-group">
+            <input type="text"
+                   name="{{ widget.name }}"
+                   class="input"
+                   placeholder=" "
+                   required
+                   autocomplete="off"
+                   id="{{ widget.attrs.id }}">
+            <label>Введите код с картинки *</label>
+        </div>
+    {% else %}
+        {# Это скрытое поле с хешем #}
+        <input type="hidden"
+               name="{{ widget.name }}"
+               value="{{ widget.value|default:'' }}"
+               id="{{ widget.attrs.id }}">
+    {% endif %}
+{% endfor %}

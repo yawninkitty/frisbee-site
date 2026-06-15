@@ -113,20 +113,20 @@
                     {% endif %}
                 </div>
 
-                <div class="floating-label-group">
+                <div class="floating-label-group password-field">
                     <input type="password" name="password1" id="id_password1" class="input" placeholder=" " required>
                     <label>Пароль *</label>
-                    {% if form.password1.errors %}
-                        <div class="auth-error-message">{{ form.password1.errors }}</div>
-                    {% endif %}
+                    <button type="button" class="password-toggle" data-target="id_password1">
+                        <img src="{% static 'images/eye.svg' %}" alt="Показать пароль">
+                    </button>
                 </div>
 
-                <div class="floating-label-group">
+                <div class="floating-label-group password-field">
                     <input type="password" name="password2" id="id_password2" class="input" placeholder=" " required>
                     <label>Пароль ещё раз *</label>
-                    {% if form.password2.errors %}
-                        <div class="auth-error-message">{{ form.password2.errors }}</div>
-                    {% endif %}
+                    <button type="button" class="password-toggle" data-target="id_password2">
+                        <img src="{% static 'images/eye.svg' %}" alt="Показать пароль">
+                    </button>
                 </div>
 
                 <!-- Чекбокс согласия -->

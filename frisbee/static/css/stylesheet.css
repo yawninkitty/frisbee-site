@@ -651,7 +651,8 @@
     input[readonly]#dog-birth-date,
     input[readonly]#competition-date,
     input[readonly]#registration-deadline,
-    input[readonly]#payment-deadline {
+    input[readonly]#payment-deadline,
+    input[readonly]#edit-birth-date{
         background-color: var(--color-white);
     }
 }
@@ -1636,6 +1637,7 @@ footer .container {
 
     .tag {
         padding: var(--spacing-x2s)  var(--spacing-xs);
+        font-size: 12px;
     }
 }
 
@@ -2266,7 +2268,7 @@ footer .container {
 .feedback-image {
     position: absolute;
     top: -65%;
-    left: 50%;
+    left: 30%;
     z-index: -1;
 }
 
@@ -2608,7 +2610,7 @@ footer .container {
         min-width: auto;
     }
 
-    .filter-container {
+    .search-competitions .filter-container {
         display: none;
     }
 
@@ -2649,18 +2651,20 @@ footer .container {
 
     .mobile-filter-panel {
         position: fixed;
-        top: 0;
-        right: 0;
-        width: 85%;
-        max-width: 360px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
         height: 100%;
         background: var(--color-white);
         z-index: 2001;
         display: flex;
         flex-direction: column;
         overflow-y: auto;
-        padding: var(--spacing-md);
+        padding: var(--spacing-md) var(--spacing-mobile);
         gap: var(--spacing-md);
+        border-radius: var(--radius-sm);
+        box-sizing: border-box;
     }
 
     .mobile-filter-header {
@@ -2674,38 +2678,53 @@ footer .container {
         flex-direction: column;
         gap: var(--spacing-md);
         flex: 1;
+        width: 100%;
+    }
+
+    .mobile-filter-content .filter-section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        width: 100%;
     }
 
     .mobile-filter-content .filters-row {
         flex-direction: column;
         gap: var(--spacing-md);
+        width: 100%;
     }
 
     .mobile-filter-content .filter-group {
         display: flex;
         flex-direction: column;
         gap: var(--spacing-xs);
+        width: 100%;
     }
 
     .mobile-filter-content .chips-container {
         display: flex;
         flex-direction: column;
         gap: var(--spacing-xs);
+        width: 100%;
     }
 
     .mobile-filter-content .chip {
         font-size: var(--text-body-sm);
         width: 100%;
         text-align: center;
+        box-sizing: border-box;
     }
 
     .mobile-filter-content .header-sm {
         margin-bottom: var(--spacing-xs);
     }
 
+    /* Выпадающие фильтры */
     .mobile-filter-content .dropdown-filters-row {
+        display: flex;
         flex-direction: column;
-        gap: var(--spacing-sm);
+        gap: var(--spacing-xs);
+        width: 100%;
     }
 
     .mobile-filter-content .dropdown-filter {
@@ -2716,21 +2735,26 @@ footer .container {
     .mobile-filter-content .dropdown-btn {
         width: 100%;
         justify-content: space-between;
+        display: flex;
+        box-sizing: border-box;
     }
 
+    /* Убираем display: block, оставляем управление через JS */
     .mobile-filter-content .dropdown-content {
-        position: relative;
-        top: 4px;
-        left: 0;
-        width: 100%;
-        min-width: auto;
+        position: relative !important;
+        top: 4px !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        min-width: auto !important;
+        max-width: 100% !important;
         margin-bottom: var(--spacing-xs);
+        box-sizing: border-box;
     }
 
     .mobile-filter-content .date-range {
         display: flex;
         align-items: center;
-        gap: var(--spacing-xs);
         margin-bottom: var(--spacing-xs);
         width: 100%;
         justify-content: space-between;
@@ -2744,7 +2768,7 @@ footer .container {
 
     .mobile-filter-content .date-input {
         flex: 1;
-        max-width: 75%;
+        max-width: 80%;
         min-width: 0;
         padding: var(--spacing-xs) var(--spacing-sm);
         border: 1px solid var(--color-gray-border);
@@ -2752,6 +2776,19 @@ footer .container {
         font-family: var(--font-secondary);
         font-size: var(--text-body-sm);
         background: var(--color-white);
+        box-sizing: border-box;
+    }
+
+    .mobile-filter-content .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        padding: var(--spacing-xs) 0;
+    }
+
+    .mobile-filter-content .clear-btn {
+        width: 100%;
+        margin-top: var(--spacing-xs);
     }
 
     .mobile-filter-actions {
@@ -2760,6 +2797,7 @@ footer .container {
         gap: var(--spacing-sm);
         padding-top: var(--spacing-md);
         border-top: 1px solid var(--color-gray-border);
+        width: 100%;
     }
 
     .mobile-filter-actions .btn {
@@ -2773,9 +2811,6 @@ footer .container {
     .competitions-grid .competition-card {
         height: auto;
     }
-
-
-
 }
 
 @media (max-width: 768px) {
@@ -2829,6 +2864,7 @@ footer .container {
 .tag-group-info {
     display: flex;
     gap: var(--spacing-xs);
+    flex-wrap: wrap;
 }
 
 .location-info p {
@@ -2846,10 +2882,16 @@ footer .container {
         flex-direction: column;
         align-items: center;
         width: 100%;
+        gap: var(--spacing-xs);
     }
 
     .info-actions .btn {
         width: 100%;
+    }
+
+    .info-actions > :nth-child(3) {
+        font-size: 16px;
+        margin-top: var(--spacing-xs);
     }
 }
 
@@ -2947,6 +2989,20 @@ footer .container {
 }
 
 /* Адаптив для мобилок */
+@media (max-width: 768px) {
+    .main-info .container {
+        padding-top: var(--spacing-lg);
+        padding-bottom: var(--spacing-md);
+    }
+
+    .entries-and-orgs-info .container {
+        padding-top: var(--spacing-sm);
+        padding-bottom: var(--spacing-sm);
+        gap: var(--spacing-sm);
+    }
+}
+
+
 @media (max-width: 768px) {
     .entry-card-info {
         flex-direction: column;
@@ -3296,6 +3352,10 @@ footer .container {
         max-width: 100%;
     }
 
+    .alert {
+        max-width: 100% !important;
+    }
+
     .application-form .card-actions {
         flex-direction: column;
         gap: var(--spacing-xs);
@@ -3357,6 +3417,7 @@ body.modal-open {
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
+    gap: var(--spacing-sm);
 }
 
 .modal-header h2 {
@@ -3620,6 +3681,10 @@ body.modal-open {
     padding-bottom: var(--spacing-xl);
 }
 
+.mobile-buttons {
+    display: none;
+}
+
 /* ===== АДАПТАЦИЯ СТРАНИЦЫ УСПЕХА ===== */
 @media (max-width: 768px) {
     .success-hero {
@@ -3732,16 +3797,27 @@ body.modal-open {
 .profile-menu-item img {
     width: 20px;
     height: 20px;
-    filter: brightness(0) saturate(100%) invert(66%) sepia(9%) saturate(409%) hue-rotate(204deg) brightness(94%) contrast(87%);
-    transition: filter 0.2s ease;
 }
 
-.profile-menu-item:hover img {
+.profile-menu-item .icon-default {
+    display: block;
+    filter: brightness(0) saturate(100%) invert(66%) sepia(9%) saturate(409%) hue-rotate(204deg) brightness(94%) contrast(87%);
+}
+
+.profile-menu-item .icon-active {
+    display: none;
+}
+
+.profile-menu-item:hover .icon-default {
     filter: brightness(0) saturate(100%) invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(0%) contrast(100%);
 }
 
-.profile-menu-item.active img {
-    filter: invert(22%) sepia(33%) saturate(6456%) hue-rotate(246deg) brightness(111%) contrast(90%);
+.profile-menu-item.active .icon-default {
+    display: none;
+}
+
+.profile-menu-item.active .icon-active {
+    display: block;
 }
 
 /* Контент (правая колонка) */
@@ -3767,11 +3843,12 @@ body.modal-open {
     }
 
     .profile-menu {
+        display: flex;
         flex: 1;
+        flex-direction: row;
     }
 
     .profile-menu-items {
-        flex-direction: row;
         position: static;
         gap: var(--spacing-xs);
     }
@@ -3791,6 +3868,70 @@ body.modal-open {
     .profile-menu-item img {
         width: 18px;
         height: 18px;
+    }
+
+    #profile-edit-mode .form-actions {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    #profile-edit-mode .form-actions .btn {
+        width: 100%;
+        padding: var(--button-spacing-lg-2) var(--button-spacing-lg-1);
+    }
+}
+
+@media (max-width: 768px) {
+    #receipt-upload-modal {
+        max-width: calc(100% - 32px) !important;
+        width: 100%;
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-md);
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    #receipt-upload-modal .modal-header {
+        padding: 0;
+    }
+
+    #receipt-upload-modal .modal-content {
+        padding: 0;
+    }
+
+    #receipt-upload-form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    #receipt-file-area {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    #receipt-files-list {
+        gap: var(--spacing-xs);
+    }
+
+    .file-upload-hint {
+        flex-direction: column !important;
+        gap: var(--spacing-xs);
+    }
+
+    .file-upload-hint .btn {
+        width: 100%;
+    }
+
+    #receipt-upload-modal .modal-actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    #receipt-upload-modal .modal-actions .btn {
+        width: 100%;
     }
 }
 
@@ -4065,6 +4206,29 @@ body.modal-open {
     color: var(--color-gray-disabled-dark);
 }
 
+.payment-tag {
+    font-size: var(--text-body-sm);
+    padding: var(--spacing-x2s) var(--spacing-2xs);
+    border-radius: var(--radius-full);
+}
+
+.payment-unpaid {
+    background-color: var(--color-peach-main);
+}
+
+.payment-pending {
+    background-color: var(--color-purple-bg);
+}
+
+.payment-paid {
+    background-color: var(--color-salad-main);
+}
+
+.application-card-actions a.btn {
+    width: 100%;
+    text-align: center;
+}
+
 .applicants-group {
     display: flex;
     flex-direction: column;
@@ -4237,9 +4401,7 @@ body.modal-open {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-2xs);
-    width: fit-content;
     overflow-y: auto; /* Добавляем вертикальную прокрутку */
-    padding-right: var(--spacing-xs); /* Отступ для скроллбара, чтобы контент не прилипал */
 }
 
 /* Стилизация скроллбара внутри формы */
@@ -4502,6 +4664,7 @@ body.modal-open {
 }
 
 .btn-danger {
+    color: var(--color-black);
     background-color: var(--color-peach-main);
 }
 
@@ -4667,7 +4830,11 @@ body.modal-open {
 
 .auth-form .btn {
     width: 100%;
-    margin-top: var(--spacing-sm);
+}
+
+.auth-form .form-actions {
+    flex-direction: column;
+    gap: var(--spacing-xs);
 }
 
 /* Для ошибок (персиковая гамма) */
@@ -4852,49 +5019,49 @@ body.modal-open {
 
 /*========== результаты публичная страница ===========*/
 
-    .results-entry-section {
-        margin-bottom: var(--spacing-xl);
-    }
+.results-entry-section {
+    margin-bottom: var(--spacing-xl);
+}
 
-    .results-entry-header {
-        margin-bottom: var(--spacing-md);
-        padding-bottom: var(--spacing-xs);
-        border-bottom: 2px solid var(--color-purple-main);
-    }
+.results-entry-header {
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 2px solid var(--color-purple-main);
+}
 
-    .results-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-family: var(--font-secondary);
-        font-size: var(--text-body-md);
-        background: var(--color-white);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-    }
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-secondary);
+    font-size: var(--text-body-md);
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
 
-    .results-table th,
-    .results-table td {
-        padding: var(--spacing-sm);
-        text-align: left;
-        border-bottom: 1px solid var(--color-gray-border);
-    }
+.results-table th,
+.results-table td {
+    padding: var(--spacing-sm);
+    text-align: left;
+    border-bottom: 1px solid var(--color-gray-border);
+}
 
-    .results-table th {
-        background-color: var(--color-gray-light);
-        font-weight: 600;
-    }
+.results-table th {
+    background-color: var(--color-gray-light);
+    font-weight: 600;
+}
 
-    .results-table tr:hover {
-        background-color: var(--color-gray-light);
-    }
+.results-table tr:hover {
+    background-color: var(--color-gray-light);
+}
 
-    .status-active {
-        color: var(--color-salad-dark);
-    }
+.status-active {
+    color: var(--color-salad-dark);
+}
 
-    .status-disqualified {
-        color: var(--color-peach-main);
-    }
+.status-disqualified {
+    color: var(--color-peach-main);
+}
 
 .results-filters {
     display: flex;
@@ -4940,6 +5107,76 @@ body.modal-open {
     display: flex;
     flex-direction: row;
     gap: var(--spacing-sm);
+}
+
+@media (max-width: 768px) {
+    #tab-results .mobile-only.btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-controls {
+        flex-direction: column;
+    }
+}
+
+/* ===== АДАПТАЦИЯ ДАШБОРДА ОРГАНИЗАТОРА ===== */
+@media (max-width: 768px) {
+    #organizer-dashboad .container {
+        padding-top: var(--spacing-md);
+        padding-bottom: var(--spacing-xl);
+        gap: var(--spacing-sm);
+    }
+
+    /* Кнопка создания на всю ширину */
+    #create-competition-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Панель управления в колонку */
+    .dashboard-controls {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    /* Группы фильтров на всю ширину */
+    .dashboard-controls .filter-group {
+        width: 100%;
+    }
+
+    /* Чипы в ряд и растянуты */
+    .dashboard-controls .chips-container {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        gap: var(--spacing-xs);
+    }
+
+    /* Каждый чип растягивается на равную ширину */
+    .dashboard-controls .chip {
+        flex: 1;
+        text-align: center;
+        box-sizing: border-box;
+        font-size: 12px;
+    }
+
+    /* Заголовок */
+    .dashboard-header {
+        text-align: center;
+    }
+
+    /* Контейнер соревнований */
+    #organizer-cards,
+    #judge-cards {
+        gap: var(--spacing-sm);
+    }
+
+    .dashboard-controls .filter-group:first-child {
+        padding-bottom: var(--spacing-xs);
+        border-bottom: 1px solid var(--color-gray-border);
+    }
 }
 
 /* ===== Страница создания соревнования ===== */
@@ -5067,6 +5304,30 @@ body.modal-open {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
+}
+
+@media (max-width: 768px) {
+    .create-competition .contact-card {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        width: 100%;
+        border: 1px solid var(--color-gray-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-sm);
+    }
+
+    .create-competition .contact-card .floating-label-group {
+        width: 100%;
+    }
+
+    .create-competition .contact-card .remove-contact {
+        order: -1;
+        align-self: flex-end;
+    }
+
+    .create-competition .contacts-list {
+        gap: var(--spacing-xs);
+    }
 }
 
 /* Чекбоксы в платежах */
@@ -5219,6 +5480,472 @@ body.modal-open {
     gap: var(--spacing-sm);
 }
 
+/* ===== АДАПТАЦИЯ СТРАНИЦЫ СОЗДАНИЯ/РЕДАКТИРОВАНИЯ СОРЕВНОВАНИЯ ===== */
+@media (max-width: 768px) {
+    .create-competition .container {
+        padding-top: var(--spacing-md);
+        padding-bottom: var(--spacing-lg);
+        gap: var(--spacing-md);
+    }
+
+    /* Заголовок */
+    .form-header {
+        text-align: center;
+    }
+
+    /* Табы в строку, растянутые по ширине */
+    .form-tabs.slider {
+        flex-direction: row;
+        width: 100%;
+    }
+
+    .form-tabs .slider-btn {
+        flex: 1;
+        text-align: center;
+    }
+
+    .form-tabs .slider-btn[data-tab="main"] {
+        min-width: 200px;
+    }
+
+    /* Контент вкладок */
+    #tab-main.tab-content.active {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    /* Секции формы */
+    .create-competition .form-section {
+        padding: 0;
+    }
+
+    /* Три колонки в одну */
+    .create-competition .form-row.three-columns {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    /* Две колонки в одну */
+    .create-competition .form-row.two-columns {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    /* Колонки */
+    .create-competition .form-col {
+        gap: var(--spacing-xs);
+    }
+
+    /* Все floating-label-group внутри form-col с отступом */
+    .create-competition .form-col .floating-label-group {
+        width: 100%;
+    }
+
+    /* Заголовки секций */
+    .create-competition .form-col h3 {
+        text-align: left;
+    }
+
+    /* Радио-группы */
+    .create-competition .radio-group {
+        width: 100%;
+    }
+
+    .create-competition .radio-options-row {
+        flex-direction: row;
+        gap: var(--spacing-xs);
+    }
+
+    .create-competition .radio-option {
+        width: 100%;
+    }
+
+    /* Способы оплаты */
+    .create-competition .payment-methods-group {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    /* Поля ввода */
+    .create-competition .floating-label-group {
+        width: 100%;
+    }
+
+    /* Файлы */
+    .create-competition .files-list {
+        gap: var(--spacing-xs);
+    }
+
+    .create-competition .file-card {
+        width: 100%;
+    }
+
+    .create-competition .file-upload-hint {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .create-competition .file-upload-hint .btn {
+        width: 100%;
+    }
+
+    /* Контакты */
+    .create-competition .contacts-list {
+        gap: var(--spacing-xs);
+    }
+
+    .create-competition .contact-card {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        width: 100%;
+    }
+
+    .create-competition .contact-card .remove-contact {
+        align-self: flex-end;
+    }
+
+    .create-competition .contact-actions {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .create-competition .contact-actions .btn {
+        width: 100%;
+    }
+
+    /* Кнопки действий */
+    .create-competition .form-actions {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        width: 100%;
+    }
+
+    .create-competition .form-actions .btn {
+        width: 100%;
+    }
+
+    /* Дисциплины */
+    .create-competition .discipline-section {
+        gap: var(--spacing-xs);
+    }
+
+    .create-competition .discipline-header {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .create-competition .discipline-header .btn {
+        width: 100%;
+    }
+
+    /* Карточка зачёта */
+    .create-competition .entry-form-card {
+        width: 100%;
+        max-width: 100%;
+        padding: var(--spacing-sm);
+    }
+
+    .create-competition .entry-form-fields {
+        gap: var(--spacing-xs);
+    }
+
+    /* Форма зачёта */
+    .create-competition .entry-form-card .form-row.two-columns {
+        gap: var(--spacing-xs);
+    }
+
+    .create-competition .entry-form-card .floating-label-group {
+        width: 100%;
+    }
+
+    /* Кастомные селекты */
+    .contact-type-select, .contact-value {
+        width: 100% !important;
+        min-width: 0px;
+    }
+
+    .custom-select-trigger {
+        width: 100%;
+    }
+
+    /* Хинты */
+    .create-competition .form-hint {
+        text-align: left;
+        padding-left: 0;
+    }
+
+    /* Кнопка удаления соревнования */
+    #delete-competition-btn {
+        width: 100%;
+    }
+
+    .discipline-section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    /* Заголовок остаётся первым (по умолчанию) */
+    .discipline-section .discipline-header h3 {
+        order: 0;
+    }
+
+    /* Формы зачётов — вторые */
+    .discipline-section .entry-forms-container {
+        order: 1;
+    }
+
+    /* Кнопка — третья */
+    .discipline-section .discipline-header {
+        display: contents; /* Убираем обёртку */
+    }
+
+    .discipline-section .discipline-header .add-entry-btn {
+        order: 2;
+    }
+
+    /* Класс — радио-кнопки в колонку */
+    .entry-form-card .radio-options-row {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .entry-form-card .radio-option {
+        width: 100%;
+    }
+}
+
+/* ===== слайдер в управлении ===== */
+@media (max-width: 768px) {
+    .form-tabs .form-tab[data-tab="applications"],
+    .form-tabs .form-tab[data-tab="start-order"],
+    .form-tabs .form-tab[data-tab="results"] {
+        flex: 1;
+        padding-left: 0;
+        padding-right: 0;
+        text-align: center;
+    }
+
+    .form-tabs .form-tab[data-tab="results"] {
+        min-width: 126px;
+    }
+}
+
+/* ===== адаптация таблицы заявок в карточки ===== */
+/* Показ/скрытие десктоп/мобилка */
+.desktop-only {
+    display: block;
+}
+
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: block;
+    }
+}
+
+/* Карточка заявки на мобилке */
+.application-mobile-card {
+    border: 1px solid var(--color-gray-border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--spacing-sm);
+}
+
+.app-card-block {
+    padding: var(--spacing-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.app-card-block + .app-card-block {
+    border-top: 1px solid var(--color-gray-border);
+}
+
+.app-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--spacing-xs);
+}
+
+/* Собака и зачёты — в ряд, слева */
+.app-card-row-inline {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--spacing-sm);
+}
+
+.app-card-label {
+    font-family: var(--font-secondary);
+    font-size: var(--text-body-sm);
+    color: var(--color-gray-middle);
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.app-card-value {
+    font-family: var(--font-secondary);
+    font-size: var(--text-body-sm);
+    color: var(--color-black);
+    font-weight: 600;
+    text-align: right;
+}
+
+.app-card-value.link-purple-main {
+    color: var(--color-purple-main);
+    text-decoration: none;
+}
+
+.app-card-entries {
+    align-items: flex-start;
+}
+
+.app-card-entries .app-card-value {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+}
+
+.app-card-entry {
+    font-weight: 600;
+}
+
+.app-card-block:nth-child(3) .app-card-row-inline {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Блок с кнопками */
+.app-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.app-card-actions .chip,
+.app-card-actions .tag {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+}
+
+/* ===== адаптация модальных окон статусов ===== */
+@media (max-width: 768px) {
+    /* Модальные окна на мобилке */
+    #payment-modal,
+    #application-status-modal {
+        max-width: calc(100% - 32px) !important;
+        width: 100%;
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-sm);
+    }
+
+    #payment-modal .modal-header,
+    #application-status-modal .modal-header {
+        padding: 0;
+    }
+
+    #payment-modal .modal-content,
+    #application-status-modal .modal-content {
+        padding: 0;
+    }
+
+    /* Форма внутри модалки */
+    #payment-form,
+    #application-status-form {
+        gap: var(--spacing-sm);
+    }
+
+    .status-modal-wrapper {
+        gap: var(--spacing-sm);
+    }
+
+    /* Кастомный селект на всю ширину */
+    #payment-modal .custom-select-wrapper,
+    #application-status-modal .custom-select-wrapper {
+        width: 100%;
+    }
+
+    /* Кнопки в колонку и на всю ширину */
+    #payment-modal .modal-actions,
+    #application-status-modal .modal-actions {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    #payment-modal .modal-actions .btn,
+    #application-status-modal .modal-actions .btn {
+        width: 100%;
+    }
+
+    /* Причина отклонения */
+    #rejection-reason-group {
+        width: 100%;
+    }
+
+    #rejection-reason {
+        width: 100%;
+    }
+
+    #payment-modal #modal-content,
+    #application-status-modal #modal-content {
+        padding: 0;
+    }
+}
+
+/* ===== адаптация фильтры результатов и очереди ===== */
+@media (max-width: 768px) {
+    .results-filters {
+        display: flex;
+        flex-direction: row;
+        gap: 0;
+    }
+
+    .results-filters .filter-group {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .results-filters .filter-group:first-child {
+        padding-right: var(--spacing-xs);
+        border-right: 1px solid var(--color-gray-border);
+    }
+
+    .results-filters .filter-group:last-child {
+        padding-left: var(--spacing-xs);
+    }
+
+    .results-filters .chips-container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .results-filters .chip {
+        width: 100%;
+        text-align: center;
+        font-size: 10px;
+    }
+}
+
 /* ===== СТАРТОВЫЙ ПРОТОКОЛ ===== */
 
 .start-order-table-wrapper {
@@ -5270,6 +5997,204 @@ body.modal-open {
     width: 37%;
 }
 
+@media (max-width: 768px) {
+
+    /* Таблица на всю ширину с уменьшенным шрифтом */
+    .start-order-table {
+        font-size: 12px;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+    }
+
+    .start-order-table th,
+    .start-order-table td {
+        padding: var(--spacing-xs) var(--spacing-x2s);
+        font-size: var(--text-body-sm);
+    }
+
+    .start-order-table .drag-col {
+        width: 30px;
+    }
+
+    /* Контейнер-обёртка — кнопка после таблицы */
+    .results-table-wrapper {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .results-table-title {
+        order: 2;
+    }
+
+    #start-order-table-container {
+        order: 1;
+    }
+
+    #save-start-order-btn {
+        width: 100%;
+    }
+
+    #tab-start-order {
+        gap: var(--spacing-sm);
+    }
+
+    #public-results .container {
+        gap: var(--spacing-sm);
+    }
+}
+
+/* ===== табличка результатов на мобилке ===== */
+@media (max-width: 768px) {
+    .results-mobile-wrapper {
+        border: 1px solid var(--color-gray-border);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+    }
+
+    .results-mobile-layout {
+        display: flex;
+        flex-direction: row;
+    }
+
+    /* Фиксированная колонка */
+    .results-mobile-fixed {
+        flex-shrink: 0;
+        border-right: 1px solid var(--color-gray-border);
+        background: var(--color-gray-light);
+    }
+
+    .results-mobile-fixed table {
+        border-collapse: collapse;
+    }
+
+    .results-mobile-fixed td {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: var(--text-body-sm);
+        font-weight: 500;
+        color: var(--color-gray-middle);
+        white-space: nowrap;
+        border-bottom: 1px solid var(--color-gray-border);
+        min-width: 110px;
+    }
+
+    .results-mobile-fixed .fixed-header {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        min-height: 38px;
+    }
+
+    /* Скроллящаяся часть */
+    .results-mobile-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .results-mobile-scroll::-webkit-scrollbar {
+        display: none;
+    }
+
+    .results-mobile-scroll table {
+        border-collapse: collapse;
+    }
+
+    .results-mobile-scroll th,
+    .results-mobile-scroll td {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: var(--text-body-sm);
+        text-align: left;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--color-gray-border);
+        min-width: 80px;
+    }
+
+    .results-mobile-scroll th {
+        font-weight: 600;
+    }
+
+    #enter-results-btn {
+        width: 100%;
+    }
+
+    .results-actions {
+        width: 100%;
+    }
+
+    .results-mobile-scroll table {
+        width: 100%;
+        min-width: max-content;
+    }
+
+    .results-mobile-scroll td {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: var(--text-body-sm);
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    #tab-results .results-actions .btn {
+        width: 100%;
+    }
+
+    .results-actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    #tab-results {
+        gap: var(--spacing-sm);
+    }
+}
+
+.mobile-only { display: none; }
+.desktop-only { display: block; }
+
+@media (max-width: 768px) {
+    .mobile-only { display: block; }
+    .desktop-only { display: none; }
+}
+
+/* ===== размер окна статусов на мобилке ===== */
+@media (max-width: 768px) {
+    #payment-modal,
+    #application-status-modal {
+        max-height: 80vh !important;
+        height: auto !important;
+        overflow-y: auto !important;
+    }
+}
+
+/* ===== адаптация таблички очереди на стрелки ===== */
+@media (max-width: 768px) {
+    .mobile-arrows {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .arrow-btn {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--color-gray-border);
+        border-radius: 4px;
+        background: var(--color-white);
+        cursor: pointer;
+        font-size: 16px;
+        line-height: 1;
+        padding: 0;
+        color: var(--color-black);
+    }
+
+    .arrow-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+}
+
 /* ===== ВВОД РЕЗУЛЬТАТОВ ===== */
 
 .results-title {
@@ -5283,7 +6208,6 @@ body.modal-open {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    flex-wrap: wrap;
 }
 
 .results-entry-card {
@@ -5405,26 +6329,6 @@ body.modal-open {
     margin-top: var(--spacing-sm);
 }
 
-@media (max-width: 768px) {
-    .accuracy-grid {
-        grid-template-columns: 1fr;
-        gap: var(--spacing-sm);
-    }
-
-    #throws-container {
-        flex-direction: column;
-    }
-
-    .throw-item {
-        width: 100%;
-    }
-
-    .results-stats {
-        flex-direction: column;
-        gap: var(--spacing-sm);
-    }
-}
-
 #accuracy-left-col {
     padding-right: var(--spacing-xs);
     border-right: 1px solid var(--color-gray-border);
@@ -5447,6 +6351,110 @@ body.modal-open {
 
 .separator-row td {
     border-bottom: 1px solid var(--color-gray-border);
+}
+
+.results-enter-form-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+/* ===== АДАПТАЦИЯ СТРАНИЦЫ ВВОДА РЕЗУЛЬТАТОВ ===== */
+@media (max-width: 768px) {
+
+    .enter-results-section .results-entry-title {
+        flex-wrap: wrap;
+        gap: var(--spacing-xs);
+    }
+
+    .enter-results-section .results-entry-title > :first-child {
+        flex: 0 0 auto;
+    }
+
+    .enter-results-section .container {
+        padding-left: var(--spacing-mobile);
+        padding-right: var(--spacing-mobile);
+    }
+
+    .results-form-wrapper {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    #participant-select-wrapper {
+        width: 100%;
+    }
+
+    #participant-select-wrapper .custom-select-trigger {
+        width: 100%;
+    }
+
+    /* Броски буллсая: поле + крестик в линию */
+    .throw-item {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+
+    .throw-item .floating-label-group {
+        flex: 1;
+    }
+
+    .throw-item .remove-throw {
+        flex-shrink: 0;
+    }
+
+    #add-throw-btn {
+        width: 100%;
+    }
+
+    .results-stats {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    #distance-form .floating-label-group {
+        width: 100%;
+    }
+
+    .accuracy-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+    }
+
+    #accuracy-left-col {
+        padding-right: var(--spacing-xs);
+        border-right: 1px solid var(--color-gray-border);
+        margin-right: 0;
+    }
+
+    #accuracy-right-col {
+        padding-left: var(--spacing-xs);
+    }
+
+    /* Кнопки */
+    .form-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-xs);
+        width: 100%;
+    }
+
+    #save-result-btn {
+        width: 100%;
+    }
+
+    #prev-participant-btn,
+    #next-participant-btn {
+        flex: 1;
+    }
+
+    .manage-competition .container {
+        gap: var(--spacing-sm);
+    }
 }
 
 /* ===== УВЕДОМЛЕНИЯ ===== */
@@ -5631,6 +6639,158 @@ body.modal-open {
     flex-shrink: 0;
 }
 
+@media (max-width: 768px) {
+    .journal-grid {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .search-users {
+        gap: var(--spacing-sm);
+    }
+
+    .dog-card {
+        max-width: 320px;
+    }
+
+    .search-users .competitions-grid {
+        justify-content: center !important;
+    }
+
+    .search-users .chip {
+        font-size: var(--text-body-sm);
+    }
+}
+
+/* ===== АДАПТАЦИЯ ПУБЛИЧНОГО ПРОФИЛЯ ===== */
+@media (max-width: 768px) {
+    .profile-container .container {
+        padding-left: var(--spacing-mobile);
+        padding-right: var(--spacing-mobile);
+        padding-bottom: var(--spacing-md);
+    }
+
+    .profile-info .card-tags {
+        justify-content: center;
+    }
+
+    .profile-container .filter-group {
+        display: block;
+    }
+
+    /* Слайдер вкладок */
+    .profile-container .form-tabs.slider {
+        padding: 4px;
+        gap: 2px;
+    }
+
+    .profile-container .form-tabs .slider-btn {
+        flex: 1;
+        padding-left: 4px;
+        padding-right: 4px;
+        font-size: 13px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .form-tab[data-tab="organizer"] {
+        min-width: 120px;
+    }
+
+    /* Фильтры на вкладке организатора */
+    .profile-container .filters-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .profile-container .filters-row .filter-group + .filter-group {
+        border-top: 1px solid var(--color-gray-border);
+        padding-top: var(--spacing-xs);
+        margin-top: var(--spacing-xs);
+    }
+
+    .profile-container .filters-row .chips-container {
+        display: flex;
+        flex-direction: row;
+        gap: var(--spacing-xs);
+    }
+
+    .profile-container .filters-row .chip {
+        flex: 1;
+        text-align: center;
+        font-size: 12px;
+    }
+
+    /* Сетка соревнований */
+    .profile-container .competitions-grid {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .results-mobile-cards {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .result-profile-card {
+        border: 1px solid var(--color-gray-border);
+        border-radius: var(--radius-lg);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .result-profile-block {
+        padding: var(--spacing-sm);
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .result-profile-value.link-purple-main {
+        color: var(--color-purple-main);
+    }
+
+    .result-profile-block + .result-profile-block {
+        border-top: 1px solid var(--color-gray-border);
+    }
+
+    .result-profile-top {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .result-profile-group {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+
+    .result-profile-label {
+        font-family: var(--font-secondary);
+        font-size: var(--text-body-sm);
+        color: var(--color-gray-middle);
+    }
+
+    .result-profile-value {
+        font-family: var(--font-secondary);
+        font-size: var(--text-body-sm);
+        color: var(--color-black);
+        font-weight: 600;
+    }
+
+    .result-profile-col {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+}
+
 /* ===== СТРАНИЦА СТАТЬИ ===== */
 
 .article-page .container {
@@ -5644,12 +6804,15 @@ body.modal-open {
     height: auto;
 }
 
-.article-page .article-image {
+.article-page .article-image img {
     max-width: 800px;
-    height: 420px;
-    overflow: hidden;
+    min-height: 200px;
     border-radius: var(--radius-lg);
     overflow: hidden;
+}
+
+.article-page .article-image {
+    padding-bottom: var(--spacing-md);
 }
 
 .article-content {
@@ -5737,6 +6900,10 @@ body.modal-open {
     .article-content img {
         border-radius: var(--radius-md);
     }
+
+    .article-back-link .btn {
+        width: 100%;
+    }
 }
 
 .articles-empty {
@@ -5772,6 +6939,126 @@ body.modal-open {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+}
+
+/* ===== МОДАЛЬНОЕ ОКНО ЭКСПОРТА ===== */
+#export-modal-overlay {
+    display: flex;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.export-modal-container {
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.export-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.export-modal-header h3 {
+    margin: 0;
+}
+
+.export-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.export-format-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.export-entries-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.export-entries-list {
+    max-height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.export-entry-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.export-entry-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--color-purple-main);
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.export-entry-item label {
+    cursor: pointer;
+    font-family: var(--font-secondary);
+    font-size: var(--text-body-sm);
+    color: var(--color-black);
+    flex: 1;
+}
+
+.export-loading {
+    text-align: center;
+    padding: var(--spacing-md) 0;
+}
+
+.export-error {
+    background: rgba(239, 145, 105, 0.1);
+    border: 1px solid var(--color-peach-main);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    color: var(--color-peach-main);
+    font-family: var(--font-secondary);
+    font-size: var(--text-body-sm);
+}
+
+.export-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-xs);
+}
+
+.export-modal-footer .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .export-modal-container {
+        width: calc(100% - 32px);
+        padding: var(--spacing-sm);
+    }
+
+    .export-modal-footer {
+        flex-direction: column;
+    }
+
+    .export-modal-footer .btn {
+        width: 100%;
+    }
 }
 
 /* хлебные крошки */
@@ -5843,4 +7130,243 @@ body.modal-open {
     align-self: flex-start;
     width: 140px;
     height: auto;
+}
+
+.alert {
+    background: rgba(109, 72, 242, 0.08);
+    border: 1px solid var(--color-purple-main);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+    max-width: 600px;
+}
+
+.alert span {
+    font-family: var(--font-secondary);
+    font-size: var(--text-body-sm);
+    color: var(--color-black);
+    line-height: var(--line-height-relaxed);
+}
+
+.alert p {
+    font-family: var(--font-primary);
+    font-size: var(--text-body-sm);
+    color: var(--color-black);
+    line-height: var(--line-height-relaxed);
+}
+
+.password-field {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: var(--spacing-sm);
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    z-index: 2;
+}
+
+.password-toggle img {
+    width: 20px;
+    height: 20px;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.password-toggle:hover img {
+    opacity: 0.8;
+}
+
+.error-page {
+    padding: var(--spacing-xl) 0;
+}
+
+.error-layout {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.error-image {
+    flex: 0 0 auto;
+}
+
+.error-image img {
+    width: 450px;
+    height: auto;
+}
+
+.error-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    align-items: center;
+    text-align: center;
+}
+
+.error-info .btn {
+    align-self: center;
+}
+
+.error-code {
+    font-family: var(--font-primary);
+    font-size: 260px;
+    color: var(--color-purple-main);
+    line-height: 1;
+}
+
+@media (max-width: 768px) {
+    .error-layout {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-md);
+    }
+
+    .error-image img {
+        width: 200px;
+    }
+
+    .error-code {
+        font-size: 80px;
+    }
+
+    .error-info {
+        align-items: center;
+    }
+}
+
+.application-card {
+    position: relative;
+}
+
+.cancel-menu {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    z-index: 10;
+}
+
+.cancel-menu-btn {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+    color: var(--color-gray-middle);
+    border-radius: var(--radius-sm);
+    letter-spacing: 2px;
+}
+
+.cancel-menu-btn:hover {
+    background: var(--color-gray-light);
+    color: var(--color-black);
+}
+
+.cancel-menu-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 10;
+    min-width: 200px;
+    padding: var(--spacing-xs);
+}
+
+.cancel-menu-dropdown .cancel-application-btn {
+    width: 100%;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: var(--font-secondary);
+    font-size: var(--text-body-sm);
+    color: var(--color-peach-main);
+    text-align: left;
+    background: transparent;
+    transition: background 0.2s;
+}
+
+.cancel-menu-dropdown .cancel-application-btn:hover {
+    background: rgba(239, 145, 105, 0.1);
+}
+
+#rejection-modal {
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    max-width: 500px;
+    width: 90%;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+#password-change-modal {
+    max-width: 500px;
+    width: 90%;
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+#password-change-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#password-change-modal .modal-content {
+    display: flex;
+    flex-direction: column;
+}
+
+#password-change-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.password-change-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+#password-change-modal .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-xs);
+}
+
+@media (max-width: 768px) {
+    #password-change-modal {
+        width: calc(100% - 32px);
+        padding: var(--spacing-sm);
+    }
+
+    #password-change-modal .modal-actions {
+        flex-direction: column;
+    }
+
+    #password-change-modal .modal-actions .btn {
+        width: 100%;
+    }
 }

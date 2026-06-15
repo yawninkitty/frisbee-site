@@ -111,7 +111,8 @@ function renderResultsTable() {
         return;
     }
 
-    // Разделяем результаты
+    const isMobile = window.innerWidth <= 768;
+
     const activeResults = resultsData.filter(r =>
         r.discipline === currentDiscipline &&
         r.sport_class === currentClass &&
@@ -129,12 +130,60 @@ function renderResultsTable() {
         return;
     }
 
+    // Мобильные карточки
+    if (isMobile) {
+        let html = '<div class="results-mobile-cards">';
+
+        const allResults = [...activeResults, ...disqualifiedResults];
+
+        allResults.forEach(result => {
+            const placeText = result.status === 'disqualified' ? 'Снят' : (result.place || '—');
+
+            html += `
+                <div class="result-profile-card">
+                    <div class="result-profile-block result-profile-top">
+                        <div class="result-profile-group">
+                            <span class="result-profile-label">Спортсмен</span>
+                            <a href="/users/${result.user_id}/" class="result-profile-value link-purple-main">${escapeHtml(result.user_name)}</a>
+                        </div>
+                        <div class="result-profile-group">
+                            <span class="result-profile-label">Сумма баллов</span>
+                            <span class="result-profile-value">${result.result_value || '—'}</span>
+                        </div>
+                        <div class="result-profile-group">
+                            <span class="result-profile-label">Место</span>
+                            <span class="result-profile-value ${result.status === 'disqualified' ? 'disqualified-place' : ''}">${placeText}</span>
+                        </div>
+                    </div>
+                    <div class="result-profile-block">
+                        <div class="result-profile-col">
+                            <span class="result-profile-label">Класс зачёта</span>
+                            <span class="result-profile-value">${escapeHtml(result.sport_class_display)}</span>
+                        </div>
+                        <div class="result-profile-col">
+                            <span class="result-profile-label">Соревнование</span>
+                            <a href="/competitions/${result.competition_id}/" class="result-profile-value link-purple-main">${escapeHtml(result.competition_title)}</a>
+                        </div>
+                        <div class="result-profile-col">
+                            <span class="result-profile-label">Дата</span>
+                            <span class="result-profile-value">${formatDate(result.competition_date)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+        return;
+    }
+
+    // Десктопная таблица
     let html = '<div class="results-table-wrapper"><table class="results-table"><thead><tr>';
     html += '<th>Место</th><th>Спортсмен</th><th>Суммарный балл</th>';
     html += '<th>Соревнование</th><th>Дата</th>';
     html += '</thead><tbody>';
 
-    // Активные участники (с местами)
     activeResults.forEach(result => {
         html += `
             <tr>
@@ -149,7 +198,6 @@ function renderResultsTable() {
         `;
     });
 
-    // Снятые участники
     disqualifiedResults.forEach(result => {
         html += `
             <tr>

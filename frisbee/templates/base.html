@@ -8,6 +8,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+    <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
+    <script>
+        // Включить vConsole только на мобилке
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            var vConsole = new VConsole();
+        }
+    </script>
 
     {% load static %}
     <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}" sizes="any">
@@ -24,7 +31,7 @@
             <!-- Навигация по центру (автоматически центрируется) -->
             <div class="nav-center">
                 <a href="{% url 'competitions:competition_list' %}">Соревнования</a>
-                <a href="{% url 'users:users_list' %}">Пользователи и собаки</a>
+                <a href="{% url 'users:users_list' %}">Пользователи и собаки</a>
                 <a href="{% url 'journal:article_list' %}">Журнал</a>
             </div>
 
@@ -67,7 +74,7 @@
                     <div class="footer-link-group">
                         <span class="header-sm color-white">Спортсменам</span>
                         <a class="body-text-md color-salad" href="{% url 'competitions:competition_list' %}">Соревнования</a>
-                        <a class="body-text-md color-salad" href="{% url 'users:users_list' %}">Пользователи и собаки</a>
+                        <a class="body-text-md color-salad" href="{% url 'users:users_list' %}">Пользователи и собаки</a>
                         <a class="body-text-md color-salad" href="{% url 'journal:article_list' %}">Журнал</a>
                     </div>
                     <div class="footer-link-group">
@@ -136,7 +143,7 @@
     <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
     <div class="mobile-menu-overlay" id="mobile-menu-overlay">
         <a href="{% url 'competitions:competition_list' %}">Соревнования</a>
-        <a href="{% url 'users:users_list' %}">Пользователи и собаки</a>
+        <a href="{% url 'users:users_list' %}">Пользователи и собаки</a>
         <a href="{% url 'journal:article_list' %}">Журнал</a>
     </div>
 

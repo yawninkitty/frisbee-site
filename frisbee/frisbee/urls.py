@@ -24,5 +24,11 @@ urlpatterns = [
 
 ]
 
+handler400 = 'frisbee.views.custom_400'
+handler403 = 'frisbee.views.custom_403'
+handler404 = 'frisbee.views.custom_404'
+handler500 = 'frisbee.views.custom_500'
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

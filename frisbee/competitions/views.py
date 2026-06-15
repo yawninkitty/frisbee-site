@@ -609,15 +609,30 @@ def manage_competition(request, pk):
     if is_main_organizer:
         applications = Application.objects.filter(
             competition=competition
-        ).exclude(status=Application.STATUS_WAITING_OWNER).select_related('user', 'dog').prefetch_related(
+        ).exclude(
+            status=Application.STATUS_WAITING_OWNER
+        ).select_related('user', 'dog').prefetch_related(
             'application_entries__entry'
-        )
+        ).order_by('-created_at')
+
         for app in applications:
             app.entries_list = app.application_entries.select_related('entry').all()
             app.has_results = Result.objects.filter(application_entry__application=app).exists()
 
     entries_for_display = competition.entries.all() if is_main_organizer else competition.entries.filter(
         assigned_judges__user=request.user
+    )
+
+    # Сортируем в порядке: Буллсай → Дальность → Точность, Новички → Прогресс → Открытый
+    discipline_order = ['bullseye', 'distance', 'accuracy']
+    class_order = ['novice', 'progress', 'open']
+
+    entries_for_display = sorted(
+        entries_for_display,
+        key=lambda e: (
+            discipline_order.index(e.discipline) if e.discipline in discipline_order else 99,
+            class_order.index(e.sport_class) if e.sport_class in class_order else 99
+        )
     )
 
     return render(request, 'competitions/manage_competition.html', {
@@ -942,7 +957,7 @@ def edit_competition(request, pk):
                                 user=judge_user, type_=Notification.Type.SYSTEM,
                                 title="Назначение судьёй",
                                 message=f"Вас назначили судьёй на соревнование '{competition.title}' в дисциплине {entry.get_discipline_display()} ({entry.get_sport_class_display()}).",
-                                link=f"/competitions/organizer/competition/{competition.id}/manage/"
+                                link=f"/organizer/competition/{competition.id}/manage/?tab=results"
                             )
                     except User.DoesNotExist: pass
             return JsonResponse({'success': True})

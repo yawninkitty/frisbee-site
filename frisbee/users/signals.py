@@ -21,8 +21,5 @@ def application_status_changed_notification(sender, instance, created, **kwargs)
             link=f"/users/profile/#applications"
         )
 
-    # При изменении статуса (не при создании)
     if not created:
-        # Отслеживаем старое состояние (нужно сохранять previous status)
-        # Для простоты пока так, потом можно доработать
         pass

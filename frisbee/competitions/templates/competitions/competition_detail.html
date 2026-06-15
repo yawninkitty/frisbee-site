@@ -143,12 +143,14 @@
 
                 {% if competition.files.all %}
                     <h3 class="header-md">Документы</h3>
-                    {% for file in competition.files.all %}
-                        <div class="list-item">
-                            <img src="{% static 'images/file_gray.svg' %}" alt="Файл">
-                            <a class="link-purple-main" href="{{ file.file.url }}" target="_blank">{{ file.title }}</a>
-                        </div>
-                    {% endfor %}
+                    <div class="contacts-list">
+                        {% for file in competition.files.all %}
+                            <div class="list-item">
+                                <img src="{% static 'images/file_gray.svg' %}" alt="Файл">
+                                <a class="link-purple-main" href="{{ file.file.url }}" target="_blank">{{ file.title }}</a>
+                            </div>
+                        {% endfor %}
+                    </div>
                 {% endif %}
             </div>
         </div>

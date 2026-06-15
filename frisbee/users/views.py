@@ -22,6 +22,9 @@ from django.core.files.storage import default_storage
 import uuid
 from django.core.files.base import ContentFile
 
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+
 # ============================================================
 # ===== РЕГИСТРАЦИЯ И АУТЕНТИФИКАЦИЯ =====
 # ============================================================
@@ -162,6 +165,35 @@ def request_organizer(request):
     profile.is_organizer_requested = True
     profile.save()
     return JsonResponse({'success': True})
+
+@login_required
+@require_http_methods(["POST"])
+def change_password(request):
+    """Смена пароля пользователя"""
+    try:
+        data = json.loads(request.body)
+        old_password = data.get('old_password')
+        new_password1 = data.get('new_password1')
+        new_password2 = data.get('new_password2')
+
+        if not old_password or not new_password1 or not new_password2:
+            return JsonResponse({'success': False, 'error': 'Все поля обязательны'})
+
+        if new_password1 != new_password2:
+            return JsonResponse({'success': False, 'error': 'Новые пароли не совпадают'})
+
+        if not request.user.check_password(old_password):
+            return JsonResponse({'success': False, 'error': 'Неверный текущий пароль'})
+
+        request.user.set_password(new_password1)
+        request.user.save()
+        update_session_auth_hash(request, request.user)
+
+        return JsonResponse({'success': True})
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Неверный формат данных'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
 
 
 # ============================================================

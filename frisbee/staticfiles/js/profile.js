@@ -88,8 +88,8 @@ const closeRejectionModalBtn = document.getElementById('close-rejection-modal');
 
 function openRejectionModal(comment) {
     if (rejectionCommentText) rejectionCommentText.textContent = comment || 'Причина отклонения не указана';
-    if (rejectionModalOverlay) rejectionModalOverlay.style.display = 'block';
-    if (rejectionModal) rejectionModal.style.display = 'block';
+    if (rejectionModalOverlay) rejectionModalOverlay.style.display = 'flex';
+    if (rejectionModal) rejectionModal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
 
@@ -97,6 +97,11 @@ function closeRejectionModalFunc() {
     if (rejectionModalOverlay) rejectionModalOverlay.style.display = 'none';
     if (rejectionModal) rejectionModal.style.display = 'none';
     document.body.style.overflow = '';
+}
+
+const closeRejectionBtn = document.getElementById('close-rejection-btn');
+if (closeRejectionBtn) {
+    closeRejectionBtn.addEventListener('click', closeRejectionModalFunc);
 }
 
 document.addEventListener('click', function(e) {
@@ -414,10 +419,11 @@ const cancelEditProfile = document.getElementById('cancel-edit-profile');
 const profileEditForm = document.getElementById('profile-edit-form');
 const profileEditError = document.getElementById('profile-edit-error');
 
-// Инициализация календаря для даты рождения
 function initProfileDatePicker() {
     const birthDateInput = document.getElementById('edit-birth-date');
     if (birthDateInput && typeof flatpickr !== 'undefined' && !birthDateInput._flatpickr) {
+        const isMobile = window.innerWidth <= 768;
+
         let initialDate = null;
         if (birthDateInput.value && birthDateInput.value.includes('-')) {
             const parts = birthDateInput.value.split('-');
@@ -427,10 +433,16 @@ function initProfileDatePicker() {
             }
         }
 
+        // На мобилке запрещаем ввод с клавиатуры
+        if (isMobile) {
+            birthDateInput.setAttribute('readonly', true);
+        }
+
         const fp = flatpickr(birthDateInput, {
             dateFormat: "d.m.Y",
             locale: "ru",
             allowInput: true,
+            disableMobile: true,
             maxDate: "today",
             defaultDate: initialDate,
             onChange: function(selectedDates, dateStr, instance) {
@@ -644,9 +656,83 @@ if (profileEditForm) {
 
 // ====================== СМЕНА ПАРОЛЯ ======================
 const changePasswordBtn = document.getElementById('change-password-btn');
+const passwordModal = document.getElementById('password-change-modal');
+const passwordModalOverlay = document.getElementById('password-modal-overlay');
+const passwordForm = document.getElementById('password-change-form');
+const passwordError = document.getElementById('password-change-error');
+const closePasswordModal = document.getElementById('close-password-modal');
+const cancelPasswordModal = document.getElementById('cancel-password-modal');
+
 if (changePasswordBtn) {
     changePasswordBtn.addEventListener('click', function() {
-        window.location.href = '/users/password-change/';
+        if (passwordModal) passwordModal.style.display = 'flex';
+        if (passwordModalOverlay) passwordModalOverlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        if (passwordError) passwordError.style.display = 'none';
+        if (passwordForm) passwordForm.reset();
+    });
+}
+
+function closePasswordModalFunc() {
+    if (passwordModal) passwordModal.style.display = 'none';
+    if (passwordModalOverlay) passwordModalOverlay.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+if (closePasswordModal) closePasswordModal.addEventListener('click', closePasswordModalFunc);
+if (cancelPasswordModal) cancelPasswordModal.addEventListener('click', closePasswordModalFunc);
+if (passwordModalOverlay) {
+    passwordModalOverlay.addEventListener('click', function(e) {
+        if (e.target === passwordModalOverlay) closePasswordModalFunc();
+    });
+}
+
+if (passwordForm) {
+    passwordForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const oldPassword = document.getElementById('old-password').value;
+        const newPassword1 = document.getElementById('new-password1').value;
+        const newPassword2 = document.getElementById('new-password2').value;
+
+        if (newPassword1 !== newPassword2) {
+            if (passwordError) {
+                passwordError.textContent = 'Новые пароли не совпадают';
+                passwordError.style.display = 'block';
+            }
+            return;
+        }
+
+        fetch('/users/password-change/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: JSON.stringify({
+                old_password: oldPassword,
+                new_password1: newPassword1,
+                new_password2: newPassword2
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closePasswordModalFunc();
+                alert('Пароль успешно изменён');
+            } else {
+                if (passwordError) {
+                    passwordError.textContent = data.error || 'Ошибка при смене пароля';
+                    passwordError.style.display = 'block';
+                }
+            }
+        })
+        .catch(error => {
+            if (passwordError) {
+                passwordError.textContent = 'Ошибка сети';
+                passwordError.style.display = 'block';
+            }
+        });
     });
 }
 

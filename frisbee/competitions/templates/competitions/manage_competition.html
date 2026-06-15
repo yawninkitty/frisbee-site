@@ -8,97 +8,178 @@
 <section class="manage-competition">
     <div class="container">
         <div class="form-header">
-            <h1 class="header-md">Управление: {{ competition.title }}</h1>
+            <h1 class="header-md">{{ competition.title }}</h1>
         </div>
 
         <div class="form-tabs slider">
             {% if is_main_organizer %}
                 <button class="form-tab slider-btn active" data-tab="applications">Заявки</button>
             {% endif %}
-            <button class="form-tab slider-btn" data-tab="start-order">Стартовые протоколы</button>
+            <button class="form-tab slider-btn" data-tab="start-order">Очереди</button>
             <button class="form-tab slider-btn {% if not is_main_organizer %}active{% endif %}" data-tab="results">Результаты</button>
         </div>
 
         {% if is_main_organizer %}
-            <!-- Вкладка: Заявки -->
-            <div id="tab-applications" class="tab-content active">
-                <div class="applications-table-wrapper">
-                    <table class="results-table">
-                        <thead>
+        <!-- Вкладка: Заявки -->
+        <div id="tab-applications" class="tab-content active">
+            <!-- Десктопная таблица -->
+            <div class="applications-table-wrapper desktop-only">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Спортсмен</th>
+                            <th>Собака</th>
+                            <th>Зачёты</th>
+                            <th>Комментарий</th>
+                            <th>Чек</th>
+                            <th>Статус заявки</th>
+                            <th>Статус оплаты</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
                             <tr>
-                                <th>Спортсмен</th>
-                                <th>Собака</th>
-                                <th>Зачёты</th>
-                                <th>Комментарий</th>
-                                <th>Чек</th>
-                                <th>Статус оплаты</th>
-                                <th>Статус заявки</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for app in applications %}
-                                <tr>
-                                    <td>
-                                        <a href="{% url 'users:user_profile' app.user.id %}" class="link-purple-main">
-                                            {{ app.user.get_full_name|default:app.user.username }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'users:dog_profile' app.dog.id %}" class="link-purple-main">
-                                            {{ app.dog.name }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        {% for app_entry in app.entries_list %}
-                                            <span class="body-text-sm">
-                                                {{ app_entry.entry.get_discipline_display }} — {{ app_entry.entry.get_sport_class_display }}
-                                                {% if app_entry.is_out_of_class %}
-                                                    <span class="color-purple-main"> (вне зачёта)</span>
-                                                {% endif %}
-                                            </span>
-                                            {% if not forloop.last %}<br>{% endif %}
-                                        {% endfor %}
-                                    </td>
-                                    <td>{{ app.comment|default:"—" }}</td>
-                                    <td>
-                                        {% if app.payment_receipt %}
-                                            <a href="{{ app.payment_receipt.url }}" target="_blank" class="link-purple-main body-text-sm">Посмотреть чек</a>
-                                        {% else %}
-                                            <span class="color-gray-middle">—</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if app.status != 'cancelled' and not app.has_results %}
-                                            <button class="chip payment-status-btn" data-app-id="{{ app.id }}" data-status="{{ app.payment_status }}">
-                                                {{ app.get_payment_status_display }}
-                                            </button>
-                                        {% else %}
-                                            <span class="tag bg-color-gray-border">{{ app.get_payment_status_display }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if app.status != 'cancelled' and not app.has_results %}
-                                            <button class="chip application-status-btn"
-                                                data-app-id="{{ app.id }}"
-                                                data-status="{{ app.status }}"
-                                                data-organizer-comment="{{ app.organizer_comment|default:'' }}">
-                                                {{ app.get_status_display }}
-                                            </button>
-                                        {% else %}
-                                            <span class="tag bg-color-gray-border">{{ app.get_status_display }}</span>
-                                        {% endif %}
-                                    </td>
-                                 </tr>
-                            {% empty %}
-                                 <tr>
-                                    <td colspan="7" class="empty-message">Нет заявок</td>
-                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                                <td>
+                                    <a href="{% url 'users:user_profile' app.user.id %}" class="link-purple-main">
+                                        {{ app.user.get_full_name|default:app.user.username }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="{% url 'users:dog_profile' app.dog.id %}" class="link-purple-main">
+                                        {{ app.dog.name }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {% for app_entry in app.entries_list %}
+                                        <span class="body-text-sm">
+                                            {{ app_entry.entry.get_discipline_display }} — {{ app_entry.entry.get_sport_class_display }}
+                                            {% if app_entry.is_out_of_class %}
+                                                <span class="color-purple-main"> (вне зачёта)</span>
+                                            {% endif %}
+                                        </span>
+                                        {% if not forloop.last %}<br>{% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>{{ app.comment|default:"—" }}</td>
+                                <td>
+                                    {% if app.payment_receipt %}
+                                        <a href="{{ app.payment_receipt.url }}" target="_blank" class="link-purple-main body-text-sm">Посмотреть</a>
+                                    {% else %}
+                                        <span class="color-gray-middle">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if app.status != 'cancelled' and not app.has_results %}
+                                        <button class="chip application-status-btn"
+                                            data-app-id="{{ app.id }}"
+                                            data-status="{{ app.status }}"
+                                            data-organizer-comment="{{ app.organizer_comment|default:'' }}">
+                                            {{ app.get_status_display }}
+                                        </button>
+                                    {% else %}
+                                        <span class="tag bg-color-gray-border">{{ app.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if app.status != 'cancelled' and not app.has_results %}
+                                        <button class="chip payment-status-btn" data-app-id="{{ app.id }}" data-status="{{ app.payment_status }}">
+                                            {{ app.get_payment_status_display }}
+                                        </button>
+                                    {% else %}
+                                        <span class="tag bg-color-gray-border">{{ app.get_payment_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                             </tr>
+                        {% empty %}
+                             <tr>
+                                <td colspan="7" class="empty-message">Нет заявок</td>
+                             </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-        {% endif %}
+
+            <!-- Мобильные карточки -->
+            <div class="applications-cards-wrapper mobile-only">
+                {% for app in applications %}
+                    <div class="application-mobile-card">
+                        <!-- Блок 1: Спортсмен -->
+                        <div class="app-card-block">
+                            <div class="app-card-row">
+                                <span class="app-card-label">Спортсмен</span>
+                                <span class="app-card-label">Возраст</span>
+                            </div>
+                            <div class="app-card-row">
+                                <a href="{% url 'users:user_profile' app.user.id %}" class="app-card-value link-purple-main">
+                                    {{ app.user.get_full_name|default:app.user.username }}
+                                </a>
+                                <span class="app-card-value">{{ app.user.profile.get_age_display|default:"—" }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Блок 2: Собака и зачёты -->
+                        <div class="app-card-block">
+                            <div class="app-card-row-inline">
+                                <span class="app-card-label">Собака</span>
+                                <a href="{% url 'users:dog_profile' app.dog.id %}" class="app-card-value link-purple-main">
+                                    {{ app.dog.name }}
+                                </a>
+                            </div>
+                            <div class="app-card-row-inline app-card-entries">
+                                <span class="app-card-label">Зачёты</span>
+                                <div class="app-card-value">
+                                    {% for app_entry in app.entries_list %}
+                                        <span class="app-card-entry">
+                                            {{ app_entry.entry.get_discipline_display }} ({{ app_entry.entry.get_sport_class_display|lower }})
+                                            {% if app_entry.is_out_of_class %}
+                                                <span class="color-purple-main"> (вне зачёта)</span>
+                                            {% endif %}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Блок 3: Комментарий и чек -->
+                        <div class="app-card-block">
+                            <div class="app-card-row-inline">
+                                <span class="app-card-label">Комментарий</span>
+                                <span class="app-card-value">{{ app.comment|default:"—" }}</span>
+                            </div>
+                            <div class="app-card-row-inline">
+                                <span class="app-card-label">Чек</span>
+                                {% if app.payment_receipt %}
+                                    <a href="{{ app.payment_receipt.url }}" target="_blank" class="app-card-value link-purple-main">Посмотреть</a>
+                                {% else %}
+                                    <span class="app-card-value color-gray-middle">—</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Блок 4: Кнопки -->
+                        <div class="app-card-block app-card-actions">
+                            {% if app.status != 'cancelled' and not app.has_results %}
+                                <button class="chip application-status-btn"
+                                    data-app-id="{{ app.id }}"
+                                    data-status="{{ app.status }}"
+                                    data-organizer-comment="{{ app.organizer_comment|default:'' }}">
+                                    {{ app.get_status_display }}
+                                </button>
+                                <button class="chip payment-status-btn" data-app-id="{{ app.id }}" data-status="{{ app.payment_status }}">
+                                    {{ app.get_payment_status_display }}
+                                </button>
+                            {% else %}
+                                <span class="tag bg-color-gray-border">{{ app.get_status_display }}</span>
+                                <span class="tag bg-color-gray-border">{{ app.get_payment_status_display }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="empty-message">Нет заявок</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
 
         <!-- Вкладка: Результаты -->
         <div id="tab-results" class="tab-content {% if not is_main_organizer %}active{% endif %}">
@@ -112,11 +193,18 @@
                 </div>
             </div>
 
+            <button onclick="showExportModal({{ competition.id }})" class="btn btn-secondary btn-l desktop-only">
+                    Скачать результаты
+                </button>
+            <h3 id="current-entry-title" class="header-sm mobile-only"></h3>
             <div class="results-table-wrapper">
                 <div class="results-table-title">
-                    <h3 id="current-entry-title" class="header-sm"></h3>
+                    <h3 id="current-entry-title" class="header-sm desktop-only"></h3>
                     <div class="results-actions">
                         <button id="enter-results-btn" class="btn btn-primary btn-s">Ввести результаты</button>
+                        <button onclick="showExportModal({{ competition.id }})" class="btn btn-secondary btn-l mobile-only">
+                        Скачать результаты
+                    </button>
                     </div>
                 </div>
                 <div id="results-table-container">
@@ -135,10 +223,10 @@
                     <div class="chips-container" id="start-order-class-tabs"></div>
                 </div>
             </div>
-
+            <h3 id="start-order-entry-title" class="header-sm mobile-only"></h3>
             <div class="results-table-wrapper">
                 <div class="results-table-title">
-                    <h3 id="start-order-entry-title" class="header-sm"></h3>
+                    <h3 id="start-order-entry-title" class="header-sm desktop-only"></h3>
                     <button id="save-start-order-btn" class="btn btn-primary btn-s" style="display:none;">Сохранить порядок</button>
                 </div>
                 <div id="start-order-table-container">
@@ -247,6 +335,9 @@
     ]
 </script>
 
-<script src="{% static 'js/custom_selects.js' %}"></script>
-<script src="{% static 'js/manage_competition.js' %}?v=14"></script>
+<script src="{% static 'js/manage_competition.js' %}?v=16"></script>
+<script>
+    const exportUrl = `/organizer/competition/${competitionId}/export/`;
+</script>
+<script src="{% static 'js/export.js' %}?v=2"></script>
 {% endblock %}

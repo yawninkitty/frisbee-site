@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<section class="error-page">
+    <div class="container">
+        <div class="error-layout">
+            <div class="error-image">
+                <img src="{% static 'images/dog_fell.svg' %}" alt="Ошибка">
+            </div>
+            <div class="error-info">
+                <span class="error-code">{{ code }}</span>
+                <p class="body-text-lg-relaxed error-text">{{ message }}</p>
+                <a href="{% url 'competitions:index' %}" class="btn btn-secondary btn-l">На главную</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,11 +1,21 @@
 {% load static %}
 
 <div class="application-card" data-app-id="{{ app.id }}" data-app-status="{{ app.status }}">
+    {% if app.status == 'approved' and app.user == request.user and not app.has_results %}
+        <div class="cancel-menu">
+            <button class="cancel-menu-btn">⋮</button>
+            <div class="cancel-menu-dropdown">
+                <button class="cancel-application-btn" data-app-id="{{ app.id }}">Отменить заявку</button>
+            </div>
+        </div>
+    {% endif %}
+
     <div class="two-columns">
         <div class="left-column">
             <div class="application-card-header">
                 <div class="status-row">
                     <span class="tag status-tag status-{{ app.status }}">{{ app.get_status_display }}</span>
+                    <span class="tag payment-tag payment-{{ app.payment_status }}">{{ app.get_payment_status_display }}</span>
                     {% if app.status == 'rejected' and app.organizer_comment %}
                         <button class="why-rejected-btn link-purple-main" data-comment="{{ app.organizer_comment }}">Почему?</button>
                     {% endif %}
@@ -23,7 +33,6 @@
                 <p class="body-text-md-relaxed">{{ app.competition.location }}</p>
             </div>
 
-            <!-- Контейнер для карточек (человек и собака) -->
             <div class="user-and-dog-cards">
                 {% if app.dog.owner == request.user and app.user != request.user %}
                     <div class="application-applicant">
@@ -152,15 +161,24 @@
                         {% endif %}
                     {% endif %}
 
-                    <!-- Кнопка прикрепления чека (только для одобренных заявок, где пользователь — автор) -->
                     {% if app.status == 'approved' and app.user == request.user %}
-                        {% if not app.payment_receipt %}
-                            <button class="upload-receipt-btn btn-primary" data-app-id="{{ app.id }}">Прикрепить чек</button>
+                        {% if app.payment_status != 'paid' %}
+                            {% if not app.payment_receipt %}
+                                <button class="upload-receipt-btn btn-primary" data-app-id="{{ app.id }}">Прикрепить чек</button>
+                            {% else %}
+                                <div class="receipt-info">
+                                    <a href="{{ app.payment_receipt.url }}" target="_blank" class="link-purple-main body-text-md">Посмотреть чек</a>
+                                    <button class="upload-receipt-btn btn-secondary" data-app-id="{{ app.id }}">Заменить</button>
+                                </div>
+                            {% endif %}
                         {% else %}
-                            <div class="receipt-info">
-                                <a href="{{ app.payment_receipt.url }}" target="_blank" class="link-purple-main body-text-md">Посмотреть чек</a>
-                                <button class="upload-receipt-btn btn-secondary" data-app-id="{{ app.id }}">Заменить</button>
-                            </div>
+                            {% if app.payment_receipt %}
+                                <div class="receipt-info">
+                                    <a href="{{ app.payment_receipt.url }}" target="_blank" class="link-purple-main body-text-md">Посмотреть чек</a>
+                                </div>
+                            {% endif %}
+                            <a href="{% url 'competitions:competition_results' app.competition.id %}?tab=start-order" class="btn btn-secondary btn-s">Очередь выступлений</a>
+                            <a href="{% url 'competitions:competition_results' app.competition.id %}" class="btn btn-primary btn-s">Результаты</a>
                         {% endif %}
                     {% endif %}
                 </div>

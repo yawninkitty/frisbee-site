@@ -13,6 +13,7 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('profile/edit/', views.edit_profile_api, name='edit_profile'),
     path('request-organizer/', views.request_organizer, name='request_organizer'),
+    path('password-change/', views.change_password, name='password_change'),
 
     # Заявки
     path('application/<int:app_id>/cancel/', views.cancel_application, name='cancel_application'),

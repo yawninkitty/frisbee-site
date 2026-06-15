@@ -14,7 +14,7 @@
         <!-- Переключатель: Результаты / Стартовый протокол -->
         <div class="form-tabs slider">
             <button class="form-tab slider-btn active" data-tab="results">Результаты</button>
-            <button class="form-tab slider-btn" data-tab="start-order">Стартовые протоколы</button>
+            <button class="form-tab slider-btn" data-tab="start-order">Очередь</button>
         </div>
 
         <div class="results-filters">
@@ -30,8 +30,8 @@
         <div id="tab-results" class="results-table-wrapper">
             <div class="results-title">
                 <h3 id="current-entry-title" class="header-md"></h3>
-                <div class="results-actions">
-                    <button onclick="showExportModal({{ competition.id }})" class="btn btn-secondary btn-s">
+                <div class="results-actions desktop-only">
+                    <button onclick="showExportModal({{ competition.id }})" class="btn btn-secondary btn-s desktop-only">
                         Скачать результаты
                     </button>
                 </div>
@@ -39,6 +39,9 @@
             <div id="results-table-container">
                 <p class="empty-message">Выберите дисциплину и класс для просмотра результатов</p>
             </div>
+            <button onclick="showExportModal({{ competition.id }})" class="btn btn-secondary btn-l mobile-only">
+                        Скачать результаты
+                    </button>
         </div>
 
         <!-- Вкладка: Стартовый протокол -->

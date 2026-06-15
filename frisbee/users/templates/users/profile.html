@@ -31,20 +31,21 @@
     <div class="profile-main">
         <!-- Меню (левая колонка) -->
         <div class="profile-menu">
-            <div class="profile-menu-items">
-                <button class="profile-menu-item {% if active_tab == 'applications' %}active{% endif %}" data-tab="applications">
-                    <img src="{% static 'images/my_applications.svg' %}">
-                    Мои заявки
-                </button>
-                <button class="profile-menu-item {% if active_tab == 'dogs' %}active{% endif %}" data-tab="dogs">
-                    <img src="{% static 'images/my_dogs.svg' %}">
-                    Мои собаки
-                </button>
-                <button class="profile-menu-item {% if active_tab == 'account' %}active{% endif %}" data-tab="account">
-                    <img src="{% static 'images/profile.svg' %}">
-                    Аккаунт
-                </button>
-            </div>
+            <button class="profile-menu-item {% if active_tab == 'applications' %}active{% endif %}" data-tab="applications">
+                <img src="{% static 'images/my_applications.svg' %}" class="icon-default">
+                <img src="{% static 'images/my_applications_purple.svg' %}" class="icon-active">
+                Мои заявки
+            </button>
+            <button class="profile-menu-item {% if active_tab == 'dogs' %}active{% endif %}" data-tab="dogs">
+                <img src="{% static 'images/my_dogs.svg' %}" class="icon-default">
+                <img src="{% static 'images/my_dogs_purple.svg' %}" class="icon-active">
+                Мои собаки
+            </button>
+            <button class="profile-menu-item {% if active_tab == 'account' %}active{% endif %}" data-tab="account">
+                <img src="{% static 'images/profile.svg' %}" class="icon-default">
+                <img src="{% static 'images/my_account_purple.svg' %}" class="icon-active">
+                Аккаунт
+            </button>
         </div>
 
         <!-- Контент (правая колонка) -->
@@ -295,10 +296,17 @@
 
 <!-- Модальное окно для причины отклонения -->
 <div id="rejection-modal" class="modal-container" style="display:none;">
-    <h3>Причина отклонения заявки</h3>
-    <p id="rejection-comment-text"></p>
-    <div class="modal-buttons">
-        <button id="close-rejection-modal" class="btn-secondary">Закрыть</button>
+    <div class="modal-header">
+        <h3 class="header-sm">Причина отклонения заявки</h3>
+        <button class="modal-close" id="close-rejection-modal">
+            <img src="{% static 'images/cross.svg' %}" alt="Закрыть">
+        </button>
+    </div>
+    <div class="modal-content">
+        <p id="rejection-comment-text" class="body-text-md-relaxed"></p>
+    </div>
+    <div class="modal-actions">
+        <button id="close-rejection-btn" class="btn btn-primary btn-s">Понятно</button>
     </div>
 </div>
 
@@ -355,7 +363,51 @@
     </div>
 </template>
 
+<!-- Модальное окно смены пароля -->
+<div id="password-modal-overlay" class="modal-overlay" style="display:none;"></div>
+<div id="password-change-modal" class="modal-container" style="display:none;">
+    <div class="modal-header">
+        <h3 class="header-sm">Сменить пароль</h3>
+        <button class="modal-close" id="close-password-modal">
+            <img src="{% static 'images/cross.svg' %}" alt="Закрыть">
+        </button>
+    </div>
+    <div class="modal-content">
+        <form id="password-change-form">
+            {% csrf_token %}
+            <div class="password-change-wrapper">
+                <div class="floating-label-group password-field">
+                    <input type="password" id="old-password" class="input" placeholder=" " required>
+                    <label>Текущий пароль</label>
+                    <button type="button" class="password-toggle" data-target="old-password">
+                        <img src="{% static 'images/eye.svg' %}" alt="Показать пароль">
+                    </button>
+                </div>
+                <div class="floating-label-group password-field">
+                    <input type="password" id="new-password1" class="input" placeholder=" " required>
+                    <label>Новый пароль</label>
+                    <button type="button" class="password-toggle" data-target="new-password1">
+                        <img src="{% static 'images/eye.svg' %}" alt="Показать пароль">
+                    </button>
+                </div>
+                <div class="floating-label-group password-field">
+                    <input type="password" id="new-password2" class="input" placeholder=" " required>
+                    <label>Новый пароль ещё раз</label>
+                    <button type="button" class="password-toggle" data-target="new-password2">
+                        <img src="{% static 'images/eye.svg' %}" alt="Показать пароль">
+                    </button>
+                </div>
+                <div id="password-change-error" class="auth-error-message" style="display:none;"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary btn-s">Сохранить</button>
+                <button type="button" id="cancel-password-modal" class="btn btn-secondary btn-s">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% load static %}
 <script src="{% static 'js/dog_add_edit_modal.js' %}"></script>
-<script src="{% static 'js/profile.js' %}?v=12"></script>
+<script src="{% static 'js/profile.js' %}?v=13"></script>
 {% endblock %}

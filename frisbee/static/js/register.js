@@ -35,18 +35,39 @@ function getCsrfToken() {
     return cookieValue;
 }
 
+// ====================== ТАБЫ КЛАССОВ НА МОБИЛКЕ ======================
+function initMobileClassTabs(container = document) {
+    if (window.innerWidth > 768) return;
+
+    container.querySelectorAll('.entries-cards-group').forEach(group => {
+        const cards = group.querySelectorAll('.entry-card-info');
+        cards.forEach((card, index) => {
+            card.style.display = index === 0 ? 'flex' : 'none';
+        });
+    });
+}
+
+// Переключение классов по табам на мобилке
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('mobile-class-tab') && window.innerWidth <= 768) {
+        const className = e.target.dataset.class;
+
+        const group = e.target.closest('.entries-cards-group');
+        group.querySelectorAll('.mobile-class-tab').forEach(t => t.classList.remove('active'));
+        e.target.classList.add('active');
+
+        group.querySelectorAll('.entry-card-info').forEach(card => {
+            card.style.display = card.dataset.class === className ? 'flex' : 'none';
+        });
+    }
+});
+
 // ====================== ЗАГРУЗКА КАРТОЧЕК ======================
 async function fetchDogCard(dogId, showSelectButton = true) {
-    console.log('=== fetchDogCard ===');
-    console.log('dogId:', dogId);
-    console.log('showSelectButton:', showSelectButton);
     try {
         const url = `/users/api/dog-card-html/?dog_id=${dogId}&show_select_button=${showSelectButton}`;
-        console.log('url:', url);
         const response = await fetch(url);
-        console.log('response status:', response.status);
         const data = await response.json();
-        console.log('response data:', data);
         return data.success ? data.html : null;
     } catch (err) {
         console.error('Ошибка загрузки карточки:', err);
@@ -75,7 +96,6 @@ async function updateActiveCarousel() {
         await renderOtherDogs(allOtherDogs);
     }
 
-    // Обновляем карусель
     if (window.dogsCarousel) {
         const activeGrid = currentDogTab === 'my'
             ? document.getElementById('my-dogs-carousel')
@@ -131,6 +151,9 @@ function renderApplicationForm(dogId, formId) {
                 titleDiv.className = 'application-title';
                 titleDiv.innerHTML = `<h3 class="header-md">Заявка №${applicationNumber}</h3>`;
                 formElement.insertAdjacentElement('beforebegin', titleDiv);
+
+                // Инициализируем табы для новой формы на мобилке
+                initMobileClassTabs(formElement);
             }
 
             applicationForms.push({ id: formId, dogId });
@@ -193,24 +216,16 @@ async function refreshDogsList(filteredDogs = null) {
 
 // ====================== ЗАГРУЗКА ДРУГИХ СОБАК ======================
 async function loadOtherDogs() {
-    console.log('=== loadOtherDogs START ===');
     const container = document.getElementById('other-dogs-carousel');
-    console.log('container:', container);
     if (!container) return;
 
     try {
-        console.log('Fetching /users/dogs/...');
         const response = await fetch('/users/dogs/');
-        console.log('response status:', response.status);
         const data = await response.json();
-        console.log('response data:', data);
         if (data.success) {
-            console.log('dogs count:', data.dogs.length);
             allOtherDogs = data.dogs;
-            console.log('allOtherDogs set:', allOtherDogs);
             await renderOtherDogs(allOtherDogs);
         } else {
-            console.log('data.success is false');
             container.innerHTML = '<p class="empty-message">Ошибка загрузки</p>';
         }
     } catch (err) {
@@ -220,33 +235,20 @@ async function loadOtherDogs() {
 }
 
 async function renderOtherDogs(dogs) {
-    console.log('=== renderOtherDogs START ===');
-    console.log('dogs:', dogs);
-    console.log('dogs.length:', dogs.length);
-
     const container = document.getElementById('other-dogs-carousel');
-    console.log('container:', container);
     if (!container) return;
 
     if (!dogs.length) {
-        console.log('No dogs, showing empty message');
         container.innerHTML = '<p class="empty-message">Нет других собак</p>';
         return;
     }
 
-    console.log('Generating HTML for', dogs.length, 'dogs...');
     let html = '';
-    for (let i = 0; i < dogs.length; i++) {
-        const dog = dogs[i];
-        console.log(`Processing dog ${i+1}/${dogs.length}:`, dog.name, 'id:', dog.id);
+    for (const dog of dogs) {
         const card = await fetchDogCard(dog.id, true);
-        console.log(`Card for ${dog.name}:`, card ? `HTML length ${card.length}` : 'null');
         if (card) html += card;
     }
-
-    console.log('Final HTML length:', html.length);
     container.innerHTML = html;
-    console.log('container.innerHTML set');
 
     if (container._clickHandler) {
         container.removeEventListener('click', container._clickHandler);
@@ -268,7 +270,6 @@ async function renderOtherDogs(dogs) {
         window.dogsCarousel.scrollAmount = 0;
         window.dogsCarousel.updateButtons();
     }
-    console.log('=== renderOtherDogs END ===');
 }
 
 // ====================== КАРУСЕЛЬ И ТАБЫ ======================
@@ -399,13 +400,11 @@ async function showDogSelectionModal(callback, excludeDogIds = [], title = 'Вы
             const gap = parseInt(getComputedStyle(grid).gap) || 20;
 
             window.modalCarousel = {
-                grid: grid,
-                prevBtn: prevBtn,
-                nextBtn: nextBtn,
+                grid, prevBtn, nextBtn,
                 scrollAmount: 0,
                 cardWidth: cardWidth + gap,
 
-                init: function() {
+                init() {
                     this.updateButtons();
                     this.prevBtn.addEventListener('click', () => this.scrollPrev());
                     this.nextBtn.addEventListener('click', () => this.scrollNext());
@@ -415,26 +414,26 @@ async function showDogSelectionModal(callback, excludeDogIds = [], title = 'Вы
                     });
                 },
 
-                scrollPrev: function() {
+                scrollPrev() {
                     let newAmount = this.scrollAmount - this.cardWidth;
                     if (newAmount <= 0) newAmount = 0;
                     this.scrollTo(newAmount);
                 },
 
-                scrollNext: function() {
+                scrollNext() {
                     const maxScroll = this.grid.scrollWidth - this.grid.clientWidth;
                     let newAmount = this.scrollAmount + this.cardWidth;
                     if (newAmount >= maxScroll) newAmount = maxScroll;
                     this.scrollTo(newAmount);
                 },
 
-                scrollTo: function(amount) {
+                scrollTo(amount) {
                     this.scrollAmount = amount;
                     this.grid.scrollTo({ left: this.scrollAmount, behavior: 'smooth' });
                     this.updateButtons();
                 },
 
-                updateButtons: function() {
+                updateButtons() {
                     if (!this.prevBtn || !this.nextBtn) return;
                     const maxScroll = this.grid.scrollWidth - this.grid.clientWidth;
                     this.prevBtn.disabled = this.scrollAmount <= 0;
@@ -443,119 +442,6 @@ async function showDogSelectionModal(callback, excludeDogIds = [], title = 'Вы
             };
             window.modalCarousel.init();
         }
-        // Точки для карусели в модалке
-        const dotsContainer = modalContainer.querySelector('.carousel-dots');
-        if (dotsContainer && grid.children.length > 1) {
-            dotsContainer.innerHTML = '';
-            for (let i = 0; i < grid.children.length; i++) {
-                const dot = document.createElement('button');
-                dot.className = 'carousel-dot';
-                if (i === 0) dot.classList.add('active');
-                dot.addEventListener('click', (() => {
-                    const idx = i;
-                    return () => {
-                        const targetScroll = idx * window.modalCarousel.cardWidth;
-                        const maxScroll = grid.scrollWidth - grid.clientWidth;
-                        window.modalCarousel.scrollTo(Math.min(targetScroll, maxScroll));
-                    };
-                })());
-                dotsContainer.appendChild(dot);
-            }
-
-            // Обновление активной точки при скролле
-            grid.addEventListener('scroll', () => {
-                const maxScroll = grid.scrollWidth - grid.clientWidth;
-                const progress = maxScroll > 0 ? grid.scrollLeft / maxScroll : 0;
-                const activeIndex = Math.round(progress * (grid.children.length - 1));
-                dotsContainer.querySelectorAll('.carousel-dot').forEach((dot, i) => {
-                    dot.classList.toggle('active', i === activeIndex);
-                });
-            });
-        }
-    }
-
-
-
-    // Переключение вкладок в модалке
-    const tabMy = modalSelectContent.querySelector('[data-tab="my"]');
-    const tabOther = modalSelectContent.querySelector('[data-tab="other"]');
-    const myList = document.getElementById('modal-my-dogs-list');
-    const otherList = document.getElementById('modal-other-dogs-list');
-
-    if (tabMy && tabOther) {
-        tabMy.addEventListener('click', () => {
-            tabMy.classList.add('active');
-            tabOther.classList.remove('active');
-            myList.style.display = 'flex';
-            otherList.style.display = 'none';
-            if (window.modalCarousel) {
-                window.modalCarousel.grid = myList;
-                window.modalCarousel.scrollAmount = 0;
-                window.modalCarousel.updateButtons();
-            }
-        });
-
-        tabOther.addEventListener('click', () => {
-            tabOther.classList.add('active');
-            tabMy.classList.remove('active');
-            otherList.style.display = 'flex';
-            myList.style.display = 'none';
-            if (window.modalCarousel) {
-                window.modalCarousel.grid = otherList;
-                window.modalCarousel.scrollAmount = 0;
-                window.modalCarousel.updateButtons();
-            }
-        });
-    }
-
-    // Поиск в модалке
-    const modalSearch = document.getElementById('modal-dog-search');
-    const debounce = (fn, delay) => {
-        let timer;
-        return (...args) => {
-            clearTimeout(timer);
-            timer = setTimeout(() => fn(...args), delay);
-        };
-    };
-
-    if (modalSearch) {
-        modalSearch.addEventListener('input', debounce(async (e) => {
-            const query = e.target.value.toLowerCase();
-            const activeTab = modalSelectContent.querySelector('.slider-btn.active')?.dataset.tab || 'my';
-
-            if (activeTab === 'my') {
-                const filtered = myDogs.filter(dog => dog.name.toLowerCase().includes(query));
-                await renderList(filtered, 'modal-my-dogs-list');
-            } else {
-                const filtered = otherDogs.filter(dog => dog.name.toLowerCase().includes(query));
-                await renderList(filtered, 'modal-other-dogs-list');
-            }
-
-            if (window.modalCarousel) {
-                const currentGrid = modalSelectContent.querySelector(`#${activeTab === 'my' ? 'modal-my-dogs-list' : 'modal-other-dogs-list'}`);
-                if (currentGrid) {
-                    window.modalCarousel.grid = currentGrid;
-                    window.modalCarousel.scrollAmount = 0;
-                    window.modalCarousel.updateButtons();
-                }
-            }
-        }, 300));
-    }
-
-    // Кнопка добавления собаки - используем общую модалку
-    const addDogBtn = document.getElementById('show-add-dog-form-btn');
-    if (addDogBtn) {
-        const newAddDogBtn = addDogBtn.cloneNode(true);
-        addDogBtn.parentNode.replaceChild(newAddDogBtn, addDogBtn);
-
-        newAddDogBtn.addEventListener('click', () => {
-            closeSelectModal();
-            window.dogModal.openAdd(async (newDog) => {
-                dogsData.push(newDog);
-                await updateActiveCarousel();
-                if (callback) await callback(newDog);
-            });
-        });
     }
 }
 
@@ -584,14 +470,11 @@ document.getElementById('submit-all-applications')?.addEventListener('click', as
 
         const selectedEntries = [];
 
-        // Находим все основные чекбоксы "Участвовать в зачёте"
         el.querySelectorAll('.entry-checkbox:checked').forEach(cb => {
             const entryId = parseInt(cb.value);
             const canOutOfClass = cb.dataset.canOutOfClass === 'true';
-
             let isOutOfClass = false;
 
-            // Если разрешено "вне зачёта" — проверяем второй чекбокс
             if (canOutOfClass) {
                 const outCheckbox = el.querySelector(`.entry-checkbox-out[value="${entryId}"]`);
                 if (outCheckbox && outCheckbox.checked) {
@@ -599,10 +482,7 @@ document.getElementById('submit-all-applications')?.addEventListener('click', as
                 }
             }
 
-            selectedEntries.push({
-                entry_id: entryId,
-                is_out_of_class: isOutOfClass
-            });
+            selectedEntries.push({ entry_id: entryId, is_out_of_class: isOutOfClass });
         });
 
         if (selectedEntries.length === 0) {
@@ -645,9 +525,7 @@ applicationsContainer?.addEventListener('click', (e) => {
         const formElement = document.getElementById(`app-form-${formId}`);
         if (formElement) {
             const titleDiv = formElement.previousElementSibling;
-            if (titleDiv && titleDiv.classList.contains('application-title')) {
-                titleDiv.remove();
-            }
+            if (titleDiv && titleDiv.classList.contains('application-title')) titleDiv.remove();
             formElement.remove();
         }
         applicationForms = applicationForms.filter(f => f.id !== formId);
@@ -669,14 +547,16 @@ applicationsContainer?.addEventListener('click', (e) => {
                 if (newFormHtml) {
                     const tempDiv = document.createElement('div');
                     tempDiv.innerHTML = newFormHtml;
-                    oldForm.replaceWith(tempDiv.firstElementChild);
+                    const newForm = tempDiv.firstElementChild;
+                    oldForm.replaceWith(newForm);
+                    initMobileClassTabs(newForm);
                 }
             }
         }, excludeIds, 'Поменять собаку');
     }
 });
 
-// Инициализация обработчиков для изначально загруженных карточек
+// ====================== ИНИЦИАЛИЗАЦИЯ СОБАК ======================
 function initInitialDogCards() {
     const myCarousel = document.getElementById('my-dogs-carousel');
     if (!myCarousel) return;
@@ -685,8 +565,7 @@ function initInitialDogCards() {
         const btn = e.target.closest('.select-dog-btn');
         if (!btn) return;
         e.preventDefault();
-        const formId = nextFormId++;
-        renderApplicationForm(parseInt(btn.dataset.dogId), formId);
+        renderApplicationForm(parseInt(btn.dataset.dogId), nextFormId++);
     };
     myCarousel.addEventListener('click', myCarousel._clickHandler);
 }
@@ -699,8 +578,7 @@ function initInitialOtherDogCards() {
         const btn = e.target.closest('.select-dog-btn');
         if (!btn) return;
         e.preventDefault();
-        const formId = nextFormId++;
-        renderApplicationForm(parseInt(btn.dataset.dogId), formId);
+        renderApplicationForm(parseInt(btn.dataset.dogId), nextFormId++);
     };
     otherCarousel.addEventListener('click', otherCarousel._clickHandler);
 }
@@ -712,7 +590,6 @@ function initDogSelection() {
     initDogSearch();
 }
 
-// Инициализация общей модалки собаки
 if (window.dogModal) {
     window.dogModal.initForm();
     window.dogModal.initCloseHandlers();
@@ -729,71 +606,30 @@ function initOutOfClassLogic() {
     const container = document.getElementById('applications-container');
     if (!container) return;
 
-    // Удаляем старый обработчик, если есть
     if (container._outOfClassHandler) {
         container.removeEventListener('change', container._outOfClassHandler);
     }
 
     container._outOfClassHandler = function(e) {
         const target = e.target;
-
-        // Находим родительскую форму заявки
         const form = target.closest('.application-form');
         if (!form) return;
 
-        // Обработка основного чекбокса "Участвовать"
         if (target.classList.contains('entry-checkbox')) {
-            const entryId = target.value;
-            // Ищем чекбокс "Вне зачёта" ТОЛЬКО в пределах этой формы
-            const outCheckbox = form.querySelector(`.entry-checkbox-out[value="${entryId}"]`);
-
-            if (outCheckbox) {
-                // Если сняли основной чекбокс — снимаем и "Вне зачёта"
-                if (!target.checked) {
-                    outCheckbox.checked = false;
-                }
-            }
+            const outCheckbox = form.querySelector(`.entry-checkbox-out[value="${target.value}"]`);
+            if (outCheckbox && !target.checked) outCheckbox.checked = false;
         }
 
-        // Обработка чекбокса "Вне зачёта"
         if (target.classList.contains('entry-checkbox-out')) {
-            const entryId = target.value;
-            // Ищем основной чекбокс ТОЛЬКО в пределах этой формы
-            const mainCheckbox = form.querySelector(`.entry-checkbox[value="${entryId}"]`);
-
-            // Если поставили "Вне зачёта" — автоматически ставим основной чекбокс
-            if (target.checked && mainCheckbox && !mainCheckbox.checked) {
-                mainCheckbox.checked = true;
-            }
+            const mainCheckbox = form.querySelector(`.entry-checkbox[value="${target.value}"]`);
+            if (target.checked && mainCheckbox && !mainCheckbox.checked) mainCheckbox.checked = true;
         }
     };
 
     container.addEventListener('change', container._outOfClassHandler);
 }
 
-// Вызываем после загрузки страницы
 document.addEventListener('DOMContentLoaded', function() {
     initOutOfClassLogic();
-});
-
-// Переключение классов по табам на мобилке
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('mobile-class-tab')) {
-        const discipline = e.target.dataset.discipline;
-        const className = e.target.dataset.class;
-
-        // Обновляем активный таб
-        const group = e.target.closest('.entries-cards-group');
-        group.querySelectorAll('.mobile-class-tab').forEach(t => t.classList.remove('active'));
-        e.target.classList.add('active');
-
-        // Показываем нужную карточку, скрываем остальные
-        group.querySelectorAll('.entry-card-info').forEach(card => {
-            if (card.dataset.class === className) {
-                card.style.display = 'flex';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }
+    initMobileClassTabs();
 });

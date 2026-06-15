@@ -20,8 +20,7 @@
             {% for class_info in discipline.classes %}
                 <div class="entry-card-info"
                      data-discipline="{{ discipline.discipline_name }}"
-                     data-class="{{ class_info.class_name }}"
-                     {% if not forloop.first %}style="display: none;"{% endif %}>
+                     data-class="{{ class_info.class_name }}">
                     <div class="info-box">
                         <p class="entry-card-value">{{ class_info.class_name }}</p>
                     </div>

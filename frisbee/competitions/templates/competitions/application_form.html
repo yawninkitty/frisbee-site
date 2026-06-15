@@ -38,7 +38,12 @@
         </div>
 
         <div class="right-column">
+            <span class="header-md">Выберите зачёты:</span>
             {{ entries_html|safe }}
+            <div class="alert">
+                <p>Оплачивать взнос сейчас не нужно</p>
+                <span>Вы сможете оплатить взнос после того, как организатор одобрит вашу заявку. Для оплаты взноса свяжитесь с организатором по контактам на афише.</span>
+            </div>
             <div class="floating-label-group">
                 <textarea rows="6" class="comment-input input" data-form-id="{{ form_id }}" placeholder=" "></textarea>
                 <label>Комментарий</label>

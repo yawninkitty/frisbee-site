@@ -15,10 +15,13 @@ function updateFloatingLabel(input) {
 
 // ====================== FLATPICKR ДЛЯ ДАТ ======================
 function initDatePickers() {
+    const isMobile = window.innerWidth <= 768;
+
     const dateConfig = {
         dateFormat: "d.m.Y",
         locale: "ru",
         allowInput: true,
+        disableMobile: true,
         clickOpens: true,
         closeOnSelect: true,
         position: "auto",
@@ -33,6 +36,7 @@ function initDatePickers() {
             time_24hr: true,
             locale: "ru",
             allowInput: true,
+            disableMobile: true,
             defaultHour: 9,
             defaultMinute: 0
         });
@@ -55,6 +59,11 @@ function initDatePickers() {
         const displayInput = document.getElementById(inputId);
         const isoInput = document.getElementById(isoInputId);
         if (!displayInput) return;
+
+        // На мобилке запрещаем ввод с клавиатуры
+        if (isMobile) {
+            displayInput.setAttribute('readonly', true);
+        }
 
         const currentValue = displayInput.value.trim();
 
@@ -133,6 +142,15 @@ initDatePickers();
     const fileInput = document.getElementById('file-input');
     let filesToDelete = [];
 
+    function updateFilesListVisibility() {
+        if (filesList) {
+            const hasChildren = filesList.children.length > 0;
+            filesList.style.display = hasChildren ? '' : 'none';
+        }
+    }
+
+    updateFilesListVisibility();
+
     function formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
@@ -161,10 +179,16 @@ initDatePickers();
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
                     body: JSON.stringify({ path: fileCard.dataset.filePath })
-                }).then(res => res.json()).then(data => { if (data.success) fileCard.remove(); });
+                }).then(res => res.json()).then(data => {
+                    if (data.success) {
+                        fileCard.remove();
+                        updateFilesListVisibility();
+                    }
+                });
             }
         });
         filesList.appendChild(clone);
+        updateFilesListVisibility();
     }
 
     function uploadFile(file) {
@@ -183,6 +207,7 @@ initDatePickers();
         fileSize.textContent = formatFileSize(file.size);
         fileProgress.style.display = 'block';
         filesList.appendChild(clone);
+        updateFilesListVisibility();
 
         const xhr = new XMLHttpRequest();
         xhr.open('POST', '/api/upload-file/');
@@ -203,15 +228,22 @@ initDatePickers();
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
                                 body: JSON.stringify({ path: fileCard.dataset.filePath })
-                            }).then(res => res.json()).then(data => { if (data.success) fileCard.remove(); });
+                            }).then(res => res.json()).then(data => {
+                                if (data.success) {
+                                    fileCard.remove();
+                                    updateFilesListVisibility();
+                                }
+                            });
                         }
                     });
                 } else {
                     fileCard.remove();
+                    updateFilesListVisibility();
                     alert('Ошибка загрузки: ' + (response.error || 'Неизвестная ошибка'));
                 }
             } else {
                 fileCard.remove();
+                updateFilesListVisibility();
                 alert('Ошибка загрузки файла');
             }
         };
@@ -221,7 +253,11 @@ initDatePickers();
     document.querySelectorAll('.existing-file').forEach(fileCard => {
         const removeBtn = fileCard.querySelector('.remove-existing-file');
         const fileId = fileCard.dataset.fileId;
-        if (removeBtn) removeBtn.addEventListener('click', function() { filesToDelete.push(fileId); fileCard.remove(); });
+        if (removeBtn) removeBtn.addEventListener('click', function() {
+            filesToDelete.push(fileId);
+            fileCard.remove();
+            updateFilesListVisibility();
+        });
     });
 
     if (addFileBtn) addFileBtn.addEventListener('click', () => fileInput.click());
@@ -230,6 +266,15 @@ initDatePickers();
     // ====================== КОНТАКТЫ ======================
     const contactsList = document.getElementById('contacts-list');
     const addContactBtn = document.getElementById('add-contact-btn');
+
+    function updateContactsListVisibility() {
+        if (contactsList) {
+            const hasChildren = contactsList.children.length > 0;
+            contactsList.style.display = hasChildren ? '' : 'none';
+        }
+    }
+
+    updateContactsListVisibility();
 
     function addContactToUI(contactType = 'email', contactValue = '') {
         const template = document.getElementById('contact-card-template');
@@ -259,9 +304,13 @@ initDatePickers();
             initCustomSelects(contactCard);
         }
 
-        removeBtn.addEventListener('click', () => contactCard.remove());
+        removeBtn.addEventListener('click', () => {
+            contactCard.remove();
+            updateContactsListVisibility();
+        });
 
         contactsList.appendChild(clone);
+        updateContactsListVisibility();
     }
 
     document.querySelectorAll('.existing-contact .contact-type-select').forEach(select => {

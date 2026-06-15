@@ -18,9 +18,12 @@
                 <label>Логин</label>
             </div>
 
-            <div class="floating-label-group">
+            <div class="floating-label-group password-field">
                 <input type="password" name="password" id="id_password" class="input" placeholder=" " required>
                 <label>Пароль</label>
+                <button type="button" class="password-toggle" data-target="id_password">
+                    <img src="{% static 'images/eye.svg' %}" alt="Показать пароль">
+                </button>
             </div>
 
             {% if form.errors %}
@@ -29,12 +32,11 @@
             </div>
             {% endif %}
 
-            <button type="submit" class="btn btn-primary btn-l">Войти</button>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-l">Войти</button>
+                <a href="{% url 'sign_up' %}?next={{ request.GET.next }}" class="btn btn-secondary btn-l">Зарегистрироваться</a>
+            </div>
         </form>
-
-        <p class="auth-footer body-text-md color-gray-middle">
-            Нет аккаунта? <a href="{% url 'sign_up' %}?next={{ request.GET.next }}" class="link-purple-main">Зарегистрироваться</a>
-        </p>
     </div>
 </div>
 {% endblock %}

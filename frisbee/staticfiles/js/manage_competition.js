@@ -26,6 +26,9 @@ function getClassName(code) {
 }
 
 function getDisciplinesAndClasses(entries) {
+    const disciplineOrder = ['bullseye', 'distance', 'accuracy'];
+    const classOrder = ['novice', 'progress', 'open'];
+
     const disciplines = [];
     const classesByDisciplineTemp = {};
 
@@ -48,6 +51,12 @@ function getDisciplinesAndClasses(entries) {
         }
     });
 
+    disciplines.sort((a, b) => disciplineOrder.indexOf(a.code) - disciplineOrder.indexOf(b.code));
+
+    Object.keys(classesByDisciplineTemp).forEach(discipline => {
+        classesByDisciplineTemp[discipline].sort((a, b) => classOrder.indexOf(a.code) - classOrder.indexOf(b.code));
+    });
+
     return { disciplines, classesByDiscipline: classesByDisciplineTemp };
 }
 
@@ -59,7 +68,7 @@ function renderDisciplineTabs(disciplines, activeDiscipline) {
     disciplines.forEach(discipline => {
         const tab = document.createElement('button');
         tab.className = 'chip';
-        if (activeDiscipline === discipline.code) tab.classList.add('active');
+        tab.classList.toggle('active', discipline.code === activeDiscipline);
         tab.textContent = discipline.name;
         tab.dataset.discipline = discipline.code;
         tab.addEventListener('click', () => setActiveDiscipline(discipline.code));
@@ -75,7 +84,7 @@ function renderClassTabs(classes, activeClass) {
     classes.forEach(cls => {
         const tab = document.createElement('button');
         tab.className = 'chip';
-        if (activeClass === cls.code) tab.classList.add('active');
+        tab.classList.toggle('active', cls.code === activeClass);
         tab.textContent = cls.name;
         tab.dataset.class = cls.code;
         tab.addEventListener('click', () => setActiveClass(cls.code));
@@ -83,17 +92,25 @@ function renderClassTabs(classes, activeClass) {
     });
 }
 
-function setActiveDiscipline(disciplineCode) {
-    currentDiscipline = disciplineCode;
-
+function updateDisciplineTabsActive() {
     document.querySelectorAll('#discipline-tabs .chip').forEach(tab => {
-        if (tab.dataset.discipline === disciplineCode) tab.classList.add('active');
-        else tab.classList.remove('active');
+        tab.classList.toggle('active', tab.dataset.discipline === currentDiscipline);
     });
+}
+
+function updateClassTabsActive() {
+    document.querySelectorAll('#class-tabs .chip').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.class === currentClass);
+    });
+}
+
+function setActiveDiscipline(disciplineCode) {
+    if (currentDiscipline === disciplineCode) return;
+    currentDiscipline = disciplineCode;
+    updateDisciplineTabsActive();
 
     const classes = classesByDiscipline[disciplineCode] || [];
-    const firstClass = classes.length > 0 ? classes[0].code : null;
-    currentClass = firstClass;
+    currentClass = classes.length > 0 ? classes[0].code : null;
 
     renderClassTabs(classes, currentClass);
     loadResults(currentDiscipline, currentClass);
@@ -101,13 +118,9 @@ function setActiveDiscipline(disciplineCode) {
 }
 
 function setActiveClass(classCode) {
+    if (currentClass === classCode) return;
     currentClass = classCode;
-
-    document.querySelectorAll('#class-tabs .chip').forEach(tab => {
-        if (tab.dataset.class === classCode) tab.classList.add('active');
-        else tab.classList.remove('active');
-    });
-
+    updateClassTabsActive();
     loadResults(currentDiscipline, currentClass);
     updateResultsHeader();
 }
@@ -141,10 +154,12 @@ async function loadResults(discipline, classCode) {
 
 function updateResultsHeader() {
     const entryTitle = document.getElementById('current-entry-title');
+    if (!entryTitle || !currentDiscipline || !currentClass) return;
+
     entryTitle.innerHTML = `
-            <span class="header-sm color-black">${getDisciplineName(currentDiscipline)}</span>
-            <span class="header-sm color-gray-middle">${getClassName(currentClass)}</span>
-        `;
+        <span class="header-sm color-black">${getDisciplineName(currentDiscipline)}</span>
+        <span class="header-sm color-gray-middle">${getClassName(currentClass)}</span>
+    `;
 
     const enterBtn = document.getElementById('enter-results-btn');
     if (enterBtn) {
@@ -159,13 +174,121 @@ function updateResultsHeader() {
     }
 }
 
+(function adaptButtonsForMobile() {
+    if (window.innerWidth <= 768) {
+        const enterBtn = document.getElementById('enter-results-btn');
+        const saveBtn = document.getElementById('save-start-order-btn');
+        if (enterBtn) {
+            enterBtn.classList.remove('btn-s');
+            enterBtn.classList.add('btn-l');
+        }
+        if (saveBtn) {
+            saveBtn.classList.remove('btn-s');
+            saveBtn.classList.add('btn-l');
+        }
+    }
+})();
+
 function renderResultsTable(results) {
     const container = document.getElementById('results-table-container');
     if (!container) return;
 
+    const isMobile = window.innerWidth <= 768;
     const isBullseye = currentDiscipline === 'bullseye';
     const isDistance = currentDiscipline === 'distance';
     const isAccuracy = currentDiscipline === 'accuracy';
+
+    if (isMobile) {
+        const headers = ['Место', 'Спортсмен', 'Собака', 'Статус'];
+        if (isBullseye) headers.push('Броски', 'Сумма', 'Кол-во бросков');
+        else if (isDistance) headers.push('Попытка 1', 'Попытка 2', 'Попытка 3', 'Посл. шанс', 'Лучший');
+        else if (isAccuracy) headers.push('Броски', 'Сумма 5 лучших', 'Общая сумма');
+
+        let html = '<div class="results-mobile-wrapper"><div class="results-mobile-layout">';
+
+        html += '<div class="results-mobile-fixed"><table><tbody>';
+        headers.forEach(header => {
+            html += `<tr><td>${header}</td></tr>`;
+        });
+        html += '</tbody></table></div>';
+
+        html += '<div class="results-mobile-scroll"><table><tbody>';
+
+        if (results.length === 0) {
+            html += '<tr><td>Нет участников</td></tr>';
+        } else {
+            html += '<tr>';
+            results.forEach(result => {
+                html += result.is_out_of_class
+                    ? '<td class="out-of-class-place">ВнЗ</td>'
+                    : `<td>${result.place || '—'}</td>`;
+            });
+            html += '</tr>';
+
+            html += '<tr>';
+            results.forEach(result => html += `<td>${escapeHtml(result.user_name)}</td>`);
+            html += '</tr>';
+
+            html += '<tr>';
+            results.forEach(result => html += `<td>${escapeHtml(result.dog_name)}</td>`);
+            html += '</tr>';
+
+            html += '<tr>';
+            results.forEach(result => {
+                html += `<td class="status-${result.status}">${result.status === 'active' ? 'Активен' : 'Снят'}</td>`;
+            });
+            html += '</tr>';
+
+            if (isBullseye) {
+                html += '<tr>';
+                results.forEach(result => {
+                    const throws = result.data?.throws || [];
+                    html += `<td>${throws.length ? throws.join(', ') : '—'}</td>`;
+                });
+                html += '</tr>';
+                html += '<tr>';
+                results.forEach(result => html += `<td>${result.data?.total ?? '—'}</td>`);
+                html += '</tr>';
+                html += '<tr>';
+                results.forEach(result => html += `<td>${result.data?.throw_count ?? '—'}</td>`);
+                html += '</tr>';
+            } else if (isDistance) {
+                html += '<tr>';
+                results.forEach(result => html += `<td>${result.data?.attempts?.[0] || 0}</td>`);
+                html += '</tr>';
+                html += '<tr>';
+                results.forEach(result => html += `<td>${result.data?.attempts?.[1] || 0}</td>`);
+                html += '</tr>';
+                html += '<tr>';
+                results.forEach(result => html += `<td>${result.data?.attempts?.[2] || 0}</td>`);
+                html += '</tr>';
+                html += '<tr>';
+                results.forEach(result => html += `<td>${result.data?.last_chance || 0}</td>`);
+                html += '</tr>';
+                html += '<tr>';
+                results.forEach(result => html += `<td class="best-value">${result.data?.best || 0}</td>`);
+                html += '</tr>';
+            } else if (isAccuracy) {
+                html += '<tr>';
+                results.forEach(result => {
+                    const throws = result.data?.throws || [];
+                    html += `<td>${throws.length ? throws.join(', ') : '—'}</td>`;
+                });
+                html += '</tr>';
+                html += '<tr>';
+                results.forEach(result => html += `<td>${result.data?.top_five_sum ?? '—'}</td>`);
+                html += '</tr>';
+                html += '<tr>';
+                results.forEach(result => html += `<td>${result.data?.total_sum ?? '—'}</td>`);
+                html += '</tr>';
+            }
+        }
+
+        html += '</tbody></table></div>';
+        html += '</div></div>';
+        container.innerHTML = html;
+        return;
+    }
 
     let html = '<div class="results-table-wrapper"><table class="results-table"><thead><tr>';
     html += '<th>Место</th><th>Спортсмен</th><th>Собака</th><th>Статус</th>';
@@ -186,18 +309,12 @@ function renderResultsTable(results) {
     } else {
         results.forEach(result => {
             html += '<tr>';
-
-            if (result.is_out_of_class) {
-                html += `<td class="out-of-class-place">ВнЗ</td>`;
-            } else {
-                html += `<td class="place-${result.place || 0}">${result.place || '—'}</td>`;
-            }
-
+            html += result.is_out_of_class
+                ? '<td class="out-of-class-place">ВнЗ</td>'
+                : `<td class="place-${result.place || 0}">${result.place || '—'}</td>`;
             html += `<td>${escapeHtml(result.user_name)}</td>`;
             html += `<td>${escapeHtml(result.dog_name)}</td>`;
-
-            const statusText = result.status === 'active' ? 'Активен' : 'Снят';
-            html += `<td class="status-${result.status}">${statusText}</td>`;
+            html += `<td class="status-${result.status}">${result.status === 'active' ? 'Активен' : 'Снят'}</td>`;
 
             if (isBullseye) {
                 const throws = result.data?.throws || [];
@@ -206,18 +323,14 @@ function renderResultsTable(results) {
                 html += `<td>${result.data?.throw_count !== undefined ? result.data.throw_count : '—'}</td>`;
             } else if (isDistance) {
                 const attempts = result.data?.attempts || [0, 0, 0];
-                html += `<td>${attempts[0] || 0}</td>`;
-                html += `<td>${attempts[1] || 0}</td>`;
-                html += `<td>${attempts[2] || 0}</td>`;
-                html += `<td>${result.data?.last_chance || 0}</td>`;
-                html += `<td class="best-value">${result.data?.best || 0}</td>`;
+                html += `<td>${attempts[0] || 0}</td><td>${attempts[1] || 0}</td><td>${attempts[2] || 0}</td>`;
+                html += `<td>${result.data?.last_chance || 0}</td><td class="best-value">${result.data?.best || 0}</td>`;
             } else if (isAccuracy) {
                 const throws = result.data?.throws || [];
                 html += `<td>${throws.length ? throws.join(', ') : '—'}</td>`;
                 html += `<td>${result.data?.top_five_sum !== undefined ? result.data.top_five_sum : '—'}</td>`;
                 html += `<td>${result.data?.total_sum !== undefined ? result.data.total_sum : '—'}</td>`;
             }
-
             html += '</tr>';
         });
     }
@@ -258,350 +371,6 @@ function initResults() {
     }
 }
 
-// ====================== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ======================
-document.addEventListener('DOMContentLoaded', function() {
-    const tabs = document.querySelectorAll('.form-tab');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    function switchToTab(tabId) {
-        if (!isMainOrganizer && tabId === 'applications') return;
-
-        tabs.forEach(t => t.classList.remove('active'));
-        const targetTab = document.querySelector(`.form-tab[data-tab="${tabId}"]`);
-        if (targetTab) targetTab.classList.add('active');
-
-        tabContents.forEach(content => content.classList.remove('active'));
-        const targetContent = document.getElementById(`tab-${tabId}`);
-        if (targetContent) targetContent.classList.add('active');
-
-        if (tabId === 'results') {
-            if (entriesData && entriesData.length > 0) {
-                const { disciplines } = getDisciplinesAndClasses(entriesData);
-                if (disciplines.length > 0 && !currentDiscipline) {
-                    setActiveDiscipline(disciplines[0].code);
-                }
-            }
-        }
-
-        if (tabId === 'start-order') {
-            if (entriesData && entriesData.length > 0) {
-                const { disciplines } = getDisciplinesAndClasses(entriesData);
-                if (!startOrderDiscipline && disciplines.length > 0) {
-                    initStartOrder();
-                }
-            }
-        }
-
-        const url = new URL(window.location.href);
-        url.searchParams.set('tab', tabId);
-        window.history.pushState({}, '', url);
-    }
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            const tabId = this.dataset.tab;
-            switchToTab(tabId);
-        });
-    });
-
-    // Сначала заполняем entriesData
-    initResults();
-
-    // Определяем, какую вкладку открыть при загрузке
-    const urlParams = new URLSearchParams(window.location.search);
-    let activeTab = urlParams.get('tab');
-
-    if (activeTab === 'applications' || activeTab === 'results' || activeTab === 'start-order') {
-        switchToTab(activeTab);
-    } else {
-        if (isMainOrganizer) {
-            switchToTab('applications');
-        } else {
-            switchToTab('results');
-        }
-    }
-
-    // ====================== МОДАЛЬНЫЕ ОКНА ======================
-    const modalOverlay = document.getElementById('modal-overlay');
-    const paymentModal = document.getElementById('payment-modal');
-    const statusModal = document.getElementById('application-status-modal');
-    let currentAppId = null;
-
-    function openModal(modal) {
-        if (modalOverlay) modalOverlay.style.display = 'flex';
-        if (modal) modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal(modal) {
-        if (modalOverlay) modalOverlay.style.display = 'none';
-        if (modal) modal.style.display = 'none';
-        document.body.style.overflow = '';
-    }
-
-    function closeAllModals() {
-        if (modalOverlay) modalOverlay.style.display = 'none';
-        if (paymentModal) paymentModal.style.display = 'none';
-        if (statusModal) statusModal.style.display = 'none';
-        document.body.style.overflow = '';
-    }
-
-    if (modalOverlay) modalOverlay.addEventListener('click', closeAllModals);
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAllModals(); });
-
-    // ====================== СТАТУС ОПЛАТЫ ======================
-    const paymentButtons = document.querySelectorAll('.payment-status-btn');
-
-    if (paymentButtons.length && isMainOrganizer) {
-        paymentButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                currentAppId = null;
-                const appId = this.dataset.appId;
-                const currentStatus = this.dataset.status;
-                currentAppId = appId;
-
-                const paymentModalContent = paymentModal.querySelector('#modal-content');
-                const customSelectWrapper = paymentModalContent.querySelector('.custom-select-wrapper');
-                const customSelectField = customSelectWrapper.querySelector('.custom-select-field');
-                const valueSpan = customSelectWrapper.querySelector('.custom-select-value');
-                const hiddenInput = customSelectWrapper.querySelector('.custom-select-input');
-                const options = customSelectWrapper.querySelectorAll('.custom-select-option');
-
-                const selectedOption = Array.from(options).find(opt => opt.dataset.value === currentStatus);
-                if (selectedOption) {
-                    valueSpan.textContent = selectedOption.textContent;
-                    valueSpan.classList.remove('placeholder');
-                    customSelectField.classList.add('has-value');
-                    selectedOption.classList.add('selected');
-                }
-                if (hiddenInput) hiddenInput.value = currentStatus;
-
-                openModal(paymentModal);
-            });
-        });
-    }
-
-    document.getElementById('close-payment-modal')?.addEventListener('click', () => closeModal(paymentModal));
-    document.getElementById('cancel-payment-modal')?.addEventListener('click', () => closeModal(paymentModal));
-
-    document.getElementById('payment-form')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const modalContent = document.getElementById('payment-modal');
-        const hiddenInput = modalContent.querySelector('.custom-select-input');
-        const newStatus = hiddenInput?.value;
-
-        if (!currentAppId || !newStatus) return;
-
-        // Блокируем кнопку отправки
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        const originalText = submitBtn?.textContent;
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Сохранение...';
-        }
-
-        try {
-            const response = await fetch('/organizer/application/update-payment-status/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                },
-                body: JSON.stringify({ app_id: currentAppId, payment_status: newStatus })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                const btn = document.querySelector(`.payment-status-btn[data-app-id="${currentAppId}"]`);
-                if (btn) {
-                    const selectedOption = modalContent.querySelector('.custom-select-option.selected');
-                    const newStatusText = selectedOption?.textContent ||
-                        (newStatus === 'paid' ? 'Оплачено' :
-                         newStatus === 'pending' ? 'Чек на проверке' : 'Не оплачено');
-
-                    btn.dataset.status = newStatus;
-                    btn.textContent = newStatusText;
-
-                    // Обновляем классы стилей
-                    btn.classList.remove('status-unpaid', 'status-pending', 'status-paid');
-                    if (newStatus === 'unpaid') btn.classList.add('status-unpaid');
-                    else if (newStatus === 'pending') btn.classList.add('status-pending');
-                    else if (newStatus === 'paid') btn.classList.add('status-paid');
-                }
-
-                closeModal(paymentModal);
-                currentAppId = null;
-
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalText;
-                }
-            } else {
-                alert(data.error || 'Ошибка при обновлении статуса');
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalText;
-                }
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            alert('Ошибка сети');
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-            }
-        }
-    });
-
-    // ====================== СТАТУС ЗАЯВКИ ======================
-    const statusButtons = document.querySelectorAll('.application-status-btn');
-    const rejectionReasonGroup = document.getElementById('rejection-reason-group');
-    const rejectionReason = document.getElementById('rejection-reason');
-
-    function toggleRejectionReason(status) {
-        if (rejectionReasonGroup) {
-            rejectionReasonGroup.style.display = status === 'rejected' ? 'flex' : 'none';
-        }
-    }
-
-    if (statusButtons.length && isMainOrganizer) {
-        statusButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                currentAppId = null;
-                const appId = this.dataset.appId;
-                const currentStatus = this.dataset.status;
-                const currentComment = this.dataset.organizerComment || '';
-                currentAppId = appId;
-
-                const statusModalContent = statusModal.querySelector('#modal-content');
-                const customSelectWrapper = statusModalContent.querySelector('.custom-select-wrapper');
-                const customSelectField = customSelectWrapper.querySelector('.custom-select-field');
-                const valueSpan = customSelectWrapper.querySelector('.custom-select-value');
-                const hiddenInput = customSelectWrapper.querySelector('.custom-select-input');
-                const options = customSelectWrapper.querySelectorAll('.custom-select-option');
-
-                const selectedOption = Array.from(options).find(opt => opt.dataset.value === currentStatus);
-                if (selectedOption) {
-                    valueSpan.textContent = selectedOption.textContent;
-                    valueSpan.classList.remove('placeholder');
-                    customSelectField.classList.add('has-value');
-                    selectedOption.classList.add('selected');
-                }
-                if (hiddenInput) hiddenInput.value = currentStatus;
-                if (rejectionReason) rejectionReason.value = currentComment;
-                toggleRejectionReason(currentStatus);
-
-                openModal(statusModal);
-            });
-        });
-    }
-
-    document.getElementById('close-status-modal')?.addEventListener('click', () => closeModal(statusModal));
-    document.getElementById('cancel-status-modal')?.addEventListener('click', () => closeModal(statusModal));
-
-    const statusModalContent = document.getElementById('application-status-modal');
-    if (statusModalContent) {
-        const observer = new MutationObserver(() => {
-            const hiddenInput = statusModalContent.querySelector('.custom-select-input');
-            if (hiddenInput) {
-                toggleRejectionReason(hiddenInput.value);
-            }
-        });
-        observer.observe(statusModalContent, { childList: true, subtree: true, attributes: true });
-    }
-
-    document.getElementById('application-status-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const modalContent = document.getElementById('application-status-modal');
-    const hiddenInput = modalContent.querySelector('.custom-select-input');
-    const newStatus = hiddenInput?.value;
-    const comment = rejectionReason?.value || '';
-
-    if (!currentAppId || !newStatus) return;
-
-    // Блокируем кнопку отправки, чтобы избежать двойного клика
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    const originalText = submitBtn?.textContent;
-    if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Сохранение...';
-    }
-
-    try {
-        const response = await fetch('/organizer/application/update-status/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-            },
-            body: JSON.stringify({
-                app_id: currentAppId,
-                status: newStatus,
-                organizer_comment: comment
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            // Обновляем кнопку на странице
-            const btn = document.querySelector(`.application-status-btn[data-app-id="${currentAppId}"]`);
-            if (btn) {
-                const selectedOption = modalContent.querySelector('.custom-select-option.selected');
-                const newStatusText = selectedOption?.textContent ||
-                    (newStatus === 'approved' ? 'Одобрена' :
-                     newStatus === 'rejected' ? 'Отклонена' : 'На рассмотрении');
-
-                btn.dataset.status = newStatus;
-                btn.dataset.organizerComment = comment;
-                btn.textContent = newStatusText;
-
-                // Обновляем классы стилей для кнопки
-                btn.classList.remove('status-pending', 'status-approved', 'status-rejected');
-                if (newStatus === 'pending') btn.classList.add('status-pending');
-                else if (newStatus === 'approved') btn.classList.add('status-approved');
-                else if (newStatus === 'rejected') btn.classList.add('status-rejected');
-            }
-
-            // Закрываем модалку
-            closeModal(statusModal);
-
-            // Сбрасываем currentAppId
-            currentAppId = null;
-
-            // Небольшая задержка перед разблокировкой (необязательно)
-            setTimeout(() => {
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalText;
-                }
-            }, 500);
-        } else {
-            alert(data.error || 'Ошибка при обновлении статуса');
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-            }
-        }
-    } catch (error) {
-        console.error('Ошибка:', error);
-        alert('Ошибка сети');
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-        }
-    }
-});
-
-    // Инициализация результатов
-    if (document.getElementById('tab-results')) {
-        initResults();
-    }
-});
-
 // ====================== СТАРТОВЫЕ ПРОТОКОЛЫ ======================
 let startOrderDiscipline = null;
 let startOrderClass = null;
@@ -614,7 +383,7 @@ function renderStartOrderDisciplineTabs(disciplines) {
     disciplines.forEach(discipline => {
         const tab = document.createElement('button');
         tab.className = 'chip';
-        if (startOrderDiscipline === discipline.code) tab.classList.add('active');
+        tab.classList.toggle('active', discipline.code === startOrderDiscipline);
         tab.textContent = discipline.name;
         tab.dataset.discipline = discipline.code;
         tab.addEventListener('click', () => setStartOrderDiscipline(discipline.code));
@@ -629,7 +398,7 @@ function renderStartOrderClassTabs(classes) {
     classes.forEach(cls => {
         const tab = document.createElement('button');
         tab.className = 'chip';
-        if (startOrderClass === cls.code) tab.classList.add('active');
+        tab.classList.toggle('active', cls.code === startOrderClass);
         tab.textContent = cls.name;
         tab.dataset.class = cls.code;
         tab.addEventListener('click', () => setStartOrderClass(cls.code));
@@ -639,6 +408,9 @@ function renderStartOrderClassTabs(classes) {
 
 function setStartOrderDiscipline(disciplineCode) {
     startOrderDiscipline = disciplineCode;
+    document.querySelectorAll('#start-order-discipline-tabs .chip').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.discipline === disciplineCode);
+    });
     const classes = classesByDiscipline[disciplineCode] || [];
     startOrderClass = classes.length > 0 ? classes[0].code : null;
     renderStartOrderClassTabs(classes);
@@ -648,6 +420,9 @@ function setStartOrderDiscipline(disciplineCode) {
 
 function setStartOrderClass(classCode) {
     startOrderClass = classCode;
+    document.querySelectorAll('#start-order-class-tabs .chip').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.class === classCode);
+    });
     loadStartOrderTable();
     updateStartOrderHeader();
 }
@@ -699,7 +474,8 @@ function renderStartOrderTable(results) {
     const container = document.getElementById('start-order-table-container');
     if (!container) return;
 
-    // Сортируем по start_order, затем по id для стабильности
+    const isMobile = window.innerWidth <= 768;
+
     results.sort((a, b) => (a.start_order ?? 9999) - (b.start_order ?? 9999) || (a.id ?? 0) - (b.id ?? 0));
 
     let html = '<div class="start-order-table-wrapper"><table class="results-table start-order-table"><thead><tr>';
@@ -708,8 +484,20 @@ function renderStartOrderTable(results) {
 
     results.forEach((result, index) => {
         const resultId = result.id || '';
+        const isFirst = index === 0;
+        const isLast = index === results.length - 1;
+
         html += `<tr draggable="true" data-result-id="${resultId}" class="draggable-row">`;
-        html += `<td class="drag-handle"><img src="/static/images/drag_and_drop.svg" alt="↕"></td>`;
+
+        if (isMobile) {
+            html += '<td class="drag-col"><div class="mobile-arrows">';
+            html += `<button class="arrow-btn arrow-up" data-direction="up" ${isFirst ? 'disabled' : ''}>↑</button>`;
+            html += `<button class="arrow-btn arrow-down" data-direction="down" ${isLast ? 'disabled' : ''}>↓</button>`;
+            html += '</div></td>';
+        } else {
+            html += `<td class="drag-handle"><img src="/static/images/drag_and_drop.svg" alt="↕"></td>`;
+        }
+
         html += `<td class="order-num">${index + 1}</td>`;
         html += `<td class="order-sportsman">${escapeHtml(result.user_name)}</td>`;
         html += `<td>${escapeHtml(result.dog_name)}</td>`;
@@ -719,35 +507,82 @@ function renderStartOrderTable(results) {
     html += '</tbody></table></div>';
     container.innerHTML = html;
 
-    initDragAndDrop();
+    if (isMobile) {
+        initMobileArrowButtons();
+    } else {
+        initDragAndDrop();
+    }
+}
+
+function initMobileArrowButtons() {
+    document.querySelectorAll('.arrow-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (this.disabled) return;
+
+            const currentRow = this.closest('tr.draggable-row');
+            const tbody = currentRow.parentNode;
+            const direction = this.dataset.direction;
+            const rows = Array.from(tbody.querySelectorAll('tr.draggable-row'));
+            const currentIndex = rows.indexOf(currentRow);
+
+            if (direction === 'up' && currentIndex > 0) {
+                tbody.insertBefore(currentRow, rows[currentIndex - 1]);
+            } else if (direction === 'down' && currentIndex < rows.length - 1) {
+                tbody.insertBefore(rows[currentIndex + 1], currentRow);
+            }
+
+            updateMobileRowNumbersAndArrows();
+        });
+    });
+}
+
+function updateMobileRowNumbersAndArrows() {
+    const rows = document.querySelectorAll('.start-order-table .draggable-row');
+    rows.forEach((row, index) => {
+        row.querySelector('.order-num').textContent = index + 1;
+
+        const arrowUp = row.querySelector('.arrow-up');
+        const arrowDown = row.querySelector('.arrow-down');
+
+        if (arrowUp) arrowUp.disabled = index === 0;
+        if (arrowDown) arrowDown.disabled = index === rows.length - 1;
+    });
 }
 
 function initDragAndDrop() {
     const tbody = document.querySelector('.start-order-table tbody');
     if (!tbody) return;
 
+    // На десктопе — draggable на всей строке
+    tbody.querySelectorAll('tr').forEach(row => {
+        row.setAttribute('draggable', 'true');
+    });
+
     tbody.addEventListener('dragstart', function(e) {
-        draggedRow = e.target.closest('tr.draggable-row');
+        // Не даём перетаскивать, если кликнули на стрелки (мобилка)
+        if (e.target.closest('.mobile-arrows') || e.target.closest('.arrow-btn')) {
+            e.preventDefault();
+            return;
+        }
+
+        draggedRow = e.target.closest('tr');
         if (!draggedRow) return;
         draggedRow.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
     });
 
     tbody.addEventListener('dragend', function(e) {
-        const row = e.target.closest('tr.draggable-row');
+        const row = e.target.closest('tr');
         if (row) row.classList.remove('dragging');
         updateRowNumbers();
     });
 
     tbody.addEventListener('dragover', function(e) {
         e.preventDefault();
-        const targetRow = e.target.closest('tr.draggable-row');
+        const targetRow = e.target.closest('tr');
         if (!targetRow || targetRow === draggedRow) return;
-
         const rect = targetRow.getBoundingClientRect();
-        const mid = rect.top + rect.height / 2;
-
-        if (e.clientY < mid) {
+        if (e.clientY < rect.top + rect.height / 2) {
             tbody.insertBefore(draggedRow, targetRow);
         } else {
             tbody.insertBefore(draggedRow, targetRow.nextSibling);
@@ -756,53 +591,10 @@ function initDragAndDrop() {
 }
 
 function updateRowNumbers() {
-    const rows = document.querySelectorAll('.start-order-table .draggable-row');
-    rows.forEach((row, index) => {
+    document.querySelectorAll('.start-order-table .draggable-row').forEach((row, index) => {
         row.querySelector('.order-num').textContent = index + 1;
     });
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('save-start-order-btn')?.addEventListener('click', async function() {
-        const rows = document.querySelectorAll('.start-order-table .draggable-row');
-        const order = [];
-
-        rows.forEach((row, index) => {
-            const resultId = row.getAttribute('data-result-id');
-            if (resultId && resultId.trim() !== '') {
-                order.push({
-                    result_id: parseInt(resultId),
-                    start_order: index
-                });
-            }
-        });
-
-        if (order.length === 0) {
-            alert('Нет данных для сохранения');
-            return;
-        }
-
-        try {
-            const response = await fetch(`/organizer/competition/${competitionId}/update-start-order/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                },
-                body: JSON.stringify({ order })
-            });
-            const data = await response.json();
-            if (data.success) {
-                alert('Порядок сохранён!');
-            } else {
-                alert(data.error || 'Ошибка сохранения');
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-            alert('Ошибка сети');
-        }
-    });
-});
 
 function initStartOrder() {
     if (!entriesData || entriesData.length === 0) {
@@ -814,10 +606,251 @@ function initStartOrder() {
     const { disciplines } = getDisciplinesAndClasses(entriesData);
     if (disciplines.length > 0) {
         renderStartOrderDisciplineTabs(disciplines);
-        // Явно активируем первый таб
-        document.querySelectorAll('#start-order-discipline-tabs .chip').forEach(tab => {
-            tab.classList.toggle('active', tab.dataset.discipline === disciplines[0].code);
-        });
         setStartOrderDiscipline(disciplines[0].code);
     }
 }
+
+// ====================== ЕДИНЫЙ DOMContentLoaded ======================
+document.addEventListener('DOMContentLoaded', function() {
+    initResults();
+
+    const tabs = document.querySelectorAll('.form-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    function switchToTab(tabId) {
+        if (!isMainOrganizer && tabId === 'applications') return;
+
+        tabs.forEach(t => t.classList.remove('active'));
+        document.querySelector(`.form-tab[data-tab="${tabId}"]`)?.classList.add('active');
+
+        tabContents.forEach(c => c.classList.remove('active'));
+        document.getElementById(`tab-${tabId}`)?.classList.add('active');
+
+        if (tabId === 'start-order' && !startOrderDiscipline) {
+            initStartOrder();
+        }
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', tabId);
+        window.history.pushState({}, '', url);
+    }
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => switchToTab(tab.dataset.tab));
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab');
+    const validTabs = ['applications', 'results', 'start-order'];
+    const defaultTab = isMainOrganizer ? 'applications' : 'results';
+    switchToTab(validTabs.includes(activeTab) ? activeTab : defaultTab);
+
+    // ====================== МОДАЛЬНЫЕ ОКНА ======================
+    const modalOverlay = document.getElementById('modal-overlay');
+    const paymentModal = document.getElementById('payment-modal');
+    const statusModal = document.getElementById('application-status-modal');
+    let currentAppId = null;
+
+    function openModal(modal) {
+        if (modalOverlay) modalOverlay.style.display = 'flex';
+        if (modal) modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modal) {
+        if (modalOverlay) modalOverlay.style.display = 'none';
+        if (modal) modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    function closeAllModals() {
+        closeModal(paymentModal);
+        closeModal(statusModal);
+    }
+
+    if (modalOverlay) modalOverlay.addEventListener('click', closeAllModals);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAllModals(); });
+
+    // ====================== СТАТУС ОПЛАТЫ ======================
+    document.querySelectorAll('.payment-status-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentAppId = this.dataset.appId;
+            const currentStatus = this.dataset.status;
+
+            const wrapper = paymentModal.querySelector('.custom-select-wrapper');
+            const field = wrapper.querySelector('.custom-select-field');
+            const valueSpan = wrapper.querySelector('.custom-select-value');
+            const hiddenInput = wrapper.querySelector('.custom-select-input');
+            const options = wrapper.querySelectorAll('.custom-select-option');
+
+            options.forEach(opt => opt.classList.remove('selected'));
+            const selectedOption = Array.from(options).find(opt => opt.dataset.value === currentStatus);
+            if (selectedOption) {
+                valueSpan.textContent = selectedOption.textContent;
+                valueSpan.classList.remove('placeholder');
+                field.classList.add('has-value');
+                selectedOption.classList.add('selected');
+            }
+            if (hiddenInput) hiddenInput.value = currentStatus;
+
+            openModal(paymentModal);
+        });
+    });
+
+    document.getElementById('close-payment-modal')?.addEventListener('click', () => closeModal(paymentModal));
+    document.getElementById('cancel-payment-modal')?.addEventListener('click', () => closeModal(paymentModal));
+
+    document.getElementById('payment-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const hiddenInput = paymentModal.querySelector('.custom-select-input');
+        const newStatus = hiddenInput?.value;
+        if (!currentAppId || !newStatus) return;
+
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn?.textContent;
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Сохранение...'; }
+
+        try {
+            const response = await fetch('/organizer/application/update-payment-status/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({ app_id: currentAppId, payment_status: newStatus })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                document.querySelectorAll(`.payment-status-btn[data-app-id="${currentAppId}"]`).forEach(btn => {
+                    const selectedOption = paymentModal.querySelector('.custom-select-option.selected');
+                    btn.dataset.status = newStatus;
+                    btn.textContent = selectedOption?.textContent || newStatus;
+                });
+                closeModal(paymentModal);
+            } else {
+                alert(data.error || 'Ошибка при обновлении статуса');
+            }
+        } catch (error) {
+            alert('Ошибка сети');
+        } finally {
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalText; }
+        }
+    });
+
+    // ====================== СТАТУС ЗАЯВКИ ======================
+    const rejectionReasonGroup = document.getElementById('rejection-reason-group');
+    const rejectionReason = document.getElementById('rejection-reason');
+
+    function toggleRejectionReason(status) {
+        if (rejectionReasonGroup) rejectionReasonGroup.style.display = status === 'rejected' ? 'flex' : 'none';
+    }
+
+    document.querySelectorAll('.application-status-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentAppId = this.dataset.appId;
+            const currentStatus = this.dataset.status;
+            const currentComment = this.dataset.organizerComment || '';
+
+            const wrapper = statusModal.querySelector('.custom-select-wrapper');
+            const field = wrapper.querySelector('.custom-select-field');
+            const valueSpan = wrapper.querySelector('.custom-select-value');
+            const hiddenInput = wrapper.querySelector('.custom-select-input');
+            const options = wrapper.querySelectorAll('.custom-select-option');
+
+            options.forEach(opt => opt.classList.remove('selected'));
+            const selectedOption = Array.from(options).find(opt => opt.dataset.value === currentStatus);
+            if (selectedOption) {
+                valueSpan.textContent = selectedOption.textContent;
+                valueSpan.classList.remove('placeholder');
+                field.classList.add('has-value');
+                selectedOption.classList.add('selected');
+            }
+            if (hiddenInput) hiddenInput.value = currentStatus;
+            if (rejectionReason) rejectionReason.value = currentComment;
+            toggleRejectionReason(currentStatus);
+
+            openModal(statusModal);
+        });
+    });
+
+    document.getElementById('close-status-modal')?.addEventListener('click', () => closeModal(statusModal));
+    document.getElementById('cancel-status-modal')?.addEventListener('click', () => closeModal(statusModal));
+
+    const statusModalContent = document.getElementById('application-status-modal');
+    if (statusModalContent) {
+        const observer = new MutationObserver(() => {
+            const hiddenInput = statusModalContent.querySelector('.custom-select-input');
+            if (hiddenInput) toggleRejectionReason(hiddenInput.value);
+        });
+        observer.observe(statusModalContent, { childList: true, subtree: true, attributes: true });
+    }
+
+    document.getElementById('application-status-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const hiddenInput = statusModal.querySelector('.custom-select-input');
+        const newStatus = hiddenInput?.value;
+        const comment = rejectionReason?.value || '';
+        if (!currentAppId || !newStatus) return;
+
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn?.textContent;
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Сохранение...'; }
+
+        try {
+            const response = await fetch('/organizer/application/update-status/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({ app_id: currentAppId, status: newStatus, organizer_comment: comment })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                document.querySelectorAll(`.application-status-btn[data-app-id="${currentAppId}"]`).forEach(btn => {
+                    const selectedOption = statusModal.querySelector('.custom-select-option.selected');
+                    btn.dataset.status = newStatus;
+                    btn.dataset.organizerComment = comment;
+                    btn.textContent = selectedOption?.textContent || newStatus;
+                });
+                closeModal(statusModal);
+            } else {
+                alert(data.error || 'Ошибка при обновлении статуса');
+            }
+        } catch (error) {
+            alert('Ошибка сети');
+        } finally {
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalText; }
+        }
+    });
+
+    // Сохранение стартового порядка
+    document.getElementById('save-start-order-btn')?.addEventListener('click', async function() {
+        let order = [];
+
+        const rows = document.querySelectorAll('.start-order-table .draggable-row');
+        rows.forEach((row, index) => {
+            const resultId = row.getAttribute('data-result-id');
+            if (resultId) order.push({ result_id: parseInt(resultId), start_order: index });
+        });
+
+        if (order.length === 0) { alert('Нет данных для сохранения'); return; }
+
+        try {
+            const response = await fetch(`/organizer/competition/${competitionId}/update-start-order/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({ order })
+            });
+            const data = await response.json();
+            alert(data.success ? 'Порядок сохранён!' : (data.error || 'Ошибка сохранения'));
+        } catch (error) {
+            alert('Ошибка сети');
+        }
+    });
+});

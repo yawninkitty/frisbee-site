@@ -31,92 +31,100 @@
                 </div>
                 <div class="mobile-filter-content" id="mobile-filter-content">
                     <!-- Фильтры-чипы -->
-                    <p class="header-sm">Дисциплина</p>
                     <div class="filters-row">
-                        <div class="filter-group">
-                            <div class="chips-container" id="mobile-discipline-chips">
-                                <button class="chip" data-filter="discipline" data-value="bullseye">Буллсай</button>
-                                <button class="chip" data-filter="discipline" data-value="distance">Броски на дальность</button>
-                                <button class="chip" data-filter="discipline" data-value="accuracy">Броски на точность</button>
+                        <div class="filter-section">
+                            <p class="header-sm">Дисциплина</p>
+                            <div class="filter-group">
+                                <div class="chips-container" id="mobile-discipline-chips">
+                                    <button class="chip" data-filter="discipline" data-value="bullseye">Буллсай</button>
+                                    <button class="chip" data-filter="discipline" data-value="distance">Броски на дальность</button>
+                                    <button class="chip" data-filter="discipline" data-value="accuracy">Броски на точность</button>
+                                </div>
                             </div>
                         </div>
 
-                        <p class="header-sm">Класс</p>
-                        <div class="filter-group">
-                            <div class="chips-container" id="mobile-class-chips">
-                                <button class="chip" data-filter="class" data-value="novice">Новички</button>
-                                <button class="chip" data-filter="class" data-value="progress">Прогресс</button>
-                                <button class="chip" data-filter="class" data-value="open">Открытый</button>
+                        <div class="filter-section">
+                            <p class="header-sm">Класс</p>
+                            <div class="filter-group">
+                                <div class="chips-container" id="mobile-class-chips">
+                                    <button class="chip" data-filter="class" data-value="novice">Новички</button>
+                                    <button class="chip" data-filter="class" data-value="progress">Прогресс</button>
+                                    <button class="chip" data-filter="class" data-value="open">Открытый</button>
+                                </div>
                             </div>
                         </div>
 
-                        <p class="header-sm">Актуальность</p>
-                        <div class="filter-group">
-                            <div class="chips-container" id="mobile-period-chips">
-                                <button class="chip" data-filter="period" data-value="upcoming">Предстоящие</button>
-                                <button class="chip" data-filter="period" data-value="past">Прошедшие</button>
+                        <div class="filter-section">
+                            <p class="header-sm">Актуальность</p>
+                            <div class="filter-group">
+                                <div class="chips-container" id="mobile-period-chips">
+                                    <button class="chip" data-filter="period" data-value="upcoming">Предстоящие</button>
+                                    <button class="chip" data-filter="period" data-value="past">Прошедшие</button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <p class="header-sm">Другие данные</p>
                     <!-- Выпадающие фильтры -->
-                    <div class="dropdown-filters-row" style="flex-direction: column;">
-                        <div class="dropdown-filter">
-                            <button class="dropdown-btn" data-dropdown="mobile-date-dropdown">
-                                <span class="btn-text">Дата проведения </span>
-                                <img src="{% static 'images/down_small.svg' %}" alt="▼" class="dropdown-arrow">
-                            </button>
-                            <div id="mobile-date-dropdown" class="dropdown-content">
-                                <div class="date-range">
-                                    <label>С:</label>
-                                    <input type="text" id="mobile-date-from" class="date-input" placeholder="дд.мм.гггг">
+                    <div class="filter-section">
+                        <p class="header-sm">Другие данные</p>
+                        <div class="filter-group">
+                            <div class="dropdown-filters-row">
+                                <div class="dropdown-filter">
+                                    <button class="dropdown-btn" data-dropdown="mobile-date-dropdown">
+                                        <span class="btn-text">Дата проведения </span>
+                                        <img src="{% static 'images/down_small.svg' %}" alt="▼" class="dropdown-arrow">
+                                    </button>
+                                    <div id="mobile-date-dropdown" class="dropdown-content">
+                                        <div class="date-range">
+                                            <label>С:</label>
+                                            <input type="text" id="mobile-date-from" class="date-input" placeholder="дд.мм.гггг">
+                                        </div>
+                                        <div class="date-range">
+                                            <label>По:</label>
+                                            <input type="text" id="mobile-date-to" class="date-input" placeholder="дд.мм.гггг">
+                                        </div>
+                                        <button id="mobile-clear-dates" class="clear-btn">Очистить</button>
+                                    </div>
                                 </div>
-                                <div class="date-range">
-                                    <label>По:</label>
-                                    <input type="text" id="mobile-date-to" class="date-input" placeholder="дд.мм.гггг">
+
+                                <div class="dropdown-filter">
+                                    <button class="dropdown-btn" data-dropdown="mobile-venue-dropdown">
+                                        <span class="btn-text">Тип площадки </span>
+                                        <img src="{% static 'images/down_small.svg' %}" alt="▼" class="dropdown-arrow">
+                                    </button>
+                                    <div id="mobile-venue-dropdown" class="dropdown-content">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" class="venue-checkbox" data-venue="outdoor"> Уличная
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" class="venue-checkbox" data-venue="indoor"> Крытая
+                                        </label>
+                                    </div>
                                 </div>
-                                <button id="mobile-clear-dates" class="clear-btn">Очистить</button>
-                            </div>
-                        </div>
 
-                        <div class="dropdown-filter">
-                            <button class="dropdown-btn" data-dropdown="mobile-venue-dropdown">
-                                <span class="btn-text">Тип площадки </span>
-                                <img src="{% static 'images/down_small.svg' %}" alt="▼" class="dropdown-arrow">
-                            </button>
-                            <div id="mobile-venue-dropdown" class="dropdown-content">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" class="venue-checkbox" data-venue="outdoor"> Уличная
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" class="venue-checkbox" data-venue="indoor"> Крытая
-                                </label>
-                            </div>
-                        </div>
+                                <div class="dropdown-filter">
+                                    <button class="dropdown-btn" data-dropdown="mobile-city-dropdown">
+                                        <span class="btn-text">Город </span>
+                                        <img src="{% static 'images/down_small.svg' %}" alt="▼" class="dropdown-arrow">
+                                    </button>
+                                    <div id="mobile-city-dropdown" class="dropdown-content">
+                                        <div id="mobile-city-list"></div>
+                                    </div>
+                                </div>
 
-                        <div class="dropdown-filter">
-                            <button class="dropdown-btn" data-dropdown="mobile-city-dropdown">
-                                <span class="btn-text">Город </span>
-                                <img src="{% static 'images/down_small.svg' %}" alt="▼" class="dropdown-arrow">
-                            </button>
-                            <div id="mobile-city-dropdown" class="dropdown-content">
-                                <div id="mobile-city-list"></div>
-                            </div>
-                        </div>
-
-                        <div class="dropdown-filter">
-                            <button class="dropdown-btn" data-dropdown="mobile-organizer-dropdown">
-                                <span class="btn-text">Организатор </span>
-                                <img src="{% static 'images/down_small.svg' %}" alt="▼" class="dropdown-arrow">
-                            </button>
-                            <div id="mobile-organizer-dropdown" class="dropdown-content">
-                                <div id="mobile-organizer-list"></div>
+                                <div class="dropdown-filter">
+                                    <button class="dropdown-btn" data-dropdown="mobile-organizer-dropdown">
+                                        <span class="btn-text">Организатор </span>
+                                        <img src="{% static 'images/down_small.svg' %}" alt="▼" class="dropdown-arrow">
+                                    </button>
+                                    <div id="mobile-organizer-dropdown" class="dropdown-content">
+                                        <div id="mobile-organizer-list"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-
                 </div>
                 <div class="mobile-filter-actions">
                     <button id="apply-mobile-filter" class="btn btn-primary btn-l">Применить фильтры</button>
